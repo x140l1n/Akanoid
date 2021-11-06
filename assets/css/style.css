@@ -1,0 +1,81 @@
+* {
+  box-sizing: border-box;
+  font-family: "Consolas";
+}
+
+body {
+  background-color: black;
+}
+
+.content {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+/***** GAME & BOARD *****/
+.game {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -300px;
+  margin-top: -235px;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 940px), (max-height: 530px) {
+  .game {
+    transform: scale(0.8);
+  }
+}
+
+@media (max-width: 420px), (max-height: 530px) {
+  .game {
+    transform: scale(0.6);
+  }
+}
+
+@media (max-width: 360px) {
+  .game {
+    transform: scale(0.4);
+  }
+}
+
+.board {
+  width: 600px;
+  height: 500px;
+  background-image: url("../img/bg.png");
+  border: 20px solid transparent;
+  border-image: url("../img/border.png") 25% round;
+}
+/***** End GAME & BOARD *****/
+
+/***** MUTE *****/
+.mute {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  right: 15px;
+  top: 15px;
+  opacity: 0.5;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-transition: opacity 0.1s linear;
+  -moz-transition: opacity 0.1s linear;
+  transition: opacity 0.1s linear;
+}
+
+.mute:hover {
+  opacity: 1;
+}
+/***** End MUTE *****/
