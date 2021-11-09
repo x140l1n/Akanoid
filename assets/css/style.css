@@ -21,8 +21,8 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  margin-left: -300px;
-  margin-top: -235px;
+  margin-left: -400px;
+  margin-top: -335px;
   text-transform: uppercase;
   -webkit-font-smoothing: antialiased;
   -webkit-user-select: none;
@@ -32,29 +32,33 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-@media (max-width: 940px), (max-height: 530px) {
+@media (max-width: 940px), (max-height: 600px) {
   .game {
-    transform: scale(0.8);
+    transform: scale(0.7);
   }
 }
 
-@media (max-width: 420px), (max-height: 530px) {
+@media (max-width: 540px), (max-height: 540px) {
   .game {
-    transform: scale(0.6);
+    transform: scale(0.5);
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 380px), (max-height: 380px) {
   .game {
     transform: scale(0.4);
   }
 }
 
+@media (max-width: 280px), (max-height: 280px) {
+  .game {
+    transform: scale(0.3);
+  }
+}
+
 .board {
-  width: 600px;
-  height: 500px;
   background-image: url("../img/bg.png");
-  border: 20px solid transparent;
+  border: solid transparent;
   border-image: url("../img/border.png") 25% round;
 }
 /***** End GAME & BOARD *****/
