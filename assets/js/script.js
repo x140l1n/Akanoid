@@ -1,11 +1,18 @@
 'use strict';
 
-const BORDER_WIDTH = 20;
-const BALL_WIDTH_HEIGHT = 20;
-const SHIP_WIDTH = 120;
-const SHIP_HEIGHT = 20;
 const BOARD_WIDTH = 800;
 const BOARD_HEIGHT = 700;
+const BORDER_WIDTH = 20;
+
+const BALL_WIDTH_HEIGHT = 20;
+const SPEED_DEFAULT_X_BALL = 5;
+const SPEED_DEFAULT_Y_BALL = 10;
+
+const SHIP_WIDTH = 120;
+const SHIP_HEIGHT = 20;
+const SHIP_MAX_LIFES = 3;
+const SPEED_DEFAULT_SHIP = 10;
+
 const TIME_UPDATE_BALL = 1000/60; //In milliseconds (ms).
 const TIME_REPEAT_CONTROLLER = 1000/60; //In milliseconds (ms).
 
@@ -41,6 +48,15 @@ class Ball {
         });
 
         BOARD.appendChild(this.sprite);
+
+        let ball = this;
+
+        //Every 10ms update the position of ball.
+        setInterval(function () {
+            if (ball.speedX !== 0 && ball.speedY !== 0) {
+                ball.update();
+            }
+        }, TIME_UPDATE_BALL);
     }
 
     draw() {
@@ -57,7 +73,11 @@ class Ball {
             }
     
             if (this.y + this.height > BOARD_HEIGHT - BORDER_WIDTH) {
-                this.directionY = -1;
+                //this.directionY = -1;
+                this.ship.die();
+                this.respawn();
+
+                return;
             } else if (this.y - BORDER_WIDTH < 0) {
                 this.directionY = 1;
             }
@@ -69,21 +89,43 @@ class Ball {
                     if (this.y + this.height < this.ship.y + this.ship.height / 2) {
                         //If the ball is touch the left side of the ship.
     
+                        let isIntersectLeftRight = false;
+                        
                         let cloneShipLeft = {...this.ship};
-                        cloneShipLeft.width /= 5;
+                        cloneShipLeft.width /= 5; 
                         
                         let cloneShipRight = {...this.ship};
                         cloneShipRight.x += cloneShipRight.width - (cloneShipRight.width / 5);
     
                         //If ball touch the left side of the ship.
                         if (intersect(this, cloneShipLeft)) {
-                            
+                            isIntersectLeftRight = true;
+
                             this.directionX = -1;
                         } else if (intersect(this, cloneShipRight)) { //If ball touch the right side of the ship.
+                            isIntersectLeftRight = true;
+
                             this.directionX = 1;
                         } else { //If the ball touch center of the ship.
-                            
+                            this.speedX = SPEED_DEFAULT_X_BALL;
+                            this.speedY = SPEED_DEFAULT_Y_BALL;
                         }
+
+                        if (isIntersectLeftRight) {
+                            cloneShipLeft.width /= 2;
+                            cloneShipRight.x += cloneShipLeft.width;
+
+                            if (intersect(this, cloneShipLeft) || intersect(this, cloneShipRight)) {
+                                this.speedX = SPEED_DEFAULT_X_BALL + 5;
+                                this.speedY = SPEED_DEFAULT_Y_BALL - 5;
+                            } else {
+                                this.speedX = SPEED_DEFAULT_X_BALL;
+                                this.speedY = SPEED_DEFAULT_Y_BALL;
+                            }
+                        }
+
+                        cloneShipLeft = null;
+                        cloneShipRight = null;
     
                         this.directionY = -1;
                     }
@@ -95,18 +137,31 @@ class Ball {
         } 
 
         this.draw();
-    }        
+    }      
+    
+    respawn() {
+        this.speedX = 0;
+        this.speedY = 0;
+        this.directionX = 1;
+        this.directionY = 1;
+        this.y = this.ship.y - BALL_WIDTH_HEIGHT;
+        this.x = (BOARD_WIDTH - BALL_WIDTH_HEIGHT) / 2;
+
+        this.draw();
+    }
 }
 
 class Ship {
     constructor(width, height, x, y, image) {
         this.width = width;
         this.height = height;
+        this.life = SHIP_MAX_LIFES;
         this.x = x;
         this.y = y;
         this.image = image;
         this.directionX = 1;
-        this.speed = 10;
+        this.speed = SPEED_DEFAULT_SHIP;
+        this.isMove = false;
     }
 
     create() {
@@ -134,21 +189,25 @@ class Ship {
     update() {   
         let newX = this.x + this.speed * this.directionX;
         
-        if (newX + this.width <= BOARD_WIDTH - BORDER_WIDTH && newX  - BORDER_WIDTH >= 0) {
-            if (ball.speedX === 0 && ball.speedY === 0) {
-                ball.x -= this.x - newX;
-                ball.update();
-            }
-
+        if (newX + this.width <= BOARD_WIDTH - BORDER_WIDTH && newX - BORDER_WIDTH >= 0) {
             this.x = newX;
+            this.isMove = true;
+            this.draw();
+        } else {
+            this.isMove = false;
         }
+    }
 
+    die() {
+        this.life--;
+        this.x = (BOARD_WIDTH - SHIP_WIDTH) / 2;
         this.draw();
     }
 }
 
-let ball = null;
-let ship = null;
+class Block {
+    construct
+}
 
 function init() {
     //Initialize board style.
@@ -157,27 +216,40 @@ function init() {
     BOARD.style.height = `${BOARD_HEIGHT}px`;
 
     //Create new ball.
-    ship = new Ship(SHIP_WIDTH, SHIP_HEIGHT, (BOARD_WIDTH - SHIP_WIDTH) / 2, (BOARD_HEIGHT - SHIP_HEIGHT) / 1.15, "./assets/img/ship.png");
+    let ship = new Ship(SHIP_WIDTH, SHIP_HEIGHT, (BOARD_WIDTH - SHIP_WIDTH) / 2, (BOARD_HEIGHT - SHIP_HEIGHT) / 1.15, "./assets/img/ship.png");
     ship.create();
 
-    ball = new Ball(ship, BALL_WIDTH_HEIGHT, BALL_WIDTH_HEIGHT, (BOARD_WIDTH - BALL_WIDTH_HEIGHT) / 2, ship.y - BALL_WIDTH_HEIGHT, "./assets/img/ball.png");
+    let ball = new Ball(ship, BALL_WIDTH_HEIGHT, BALL_WIDTH_HEIGHT, (BOARD_WIDTH - BALL_WIDTH_HEIGHT) / 2, ship.y - BALL_WIDTH_HEIGHT, "./assets/img/ball.png");
     ball.create();
-
-    //Every 10ms update the position of ball.
-    setInterval(function () {
-        if (ball.speedX !== 0 && ball.speedY !== 0) {
-            ball.update();
-        }
-    }, TIME_UPDATE_BALL);
 
     //Create controllers game.
     //Code 39 =>
     //Code 37 <=
     //Code 32 Space bar
     keyboardController({
-        37: function() { ship.directionX = -1; ship.update(); },
-        39: function() { ship.directionX = 1; ship.update(); },
-        32: function() { ball.speedX = 2; ball.speedY = 10; }
+        37: function() { 
+            ship.directionX = -1; 
+            ship.update(); 
+
+            if (ball.speedX === 0 && 
+                ball.speedY === 0 &&
+                ship.isMove) {
+                ball.x -= SPEED_DEFAULT_SHIP;
+                ball.update(); 
+            }
+        },
+        39: function() { 
+            ship.directionX = 1;
+            ship.update(); 
+             
+            if (ball.speedX === 0 && 
+                ball.speedY === 0 && 
+                ship.isMove) {
+                ball.x += SPEED_DEFAULT_SHIP;
+                ball.update(); 
+            }
+        },
+        32: function() { ball.speedX = SPEED_DEFAULT_X_BALL; ball.speedY = SPEED_DEFAULT_Y_BALL; }
     }, TIME_REPEAT_CONTROLLER);
 }
 
@@ -234,11 +306,17 @@ function keyboardController(keys, repeat) {
     };
 }
 
+/**
+ * Check if two objects is intersect.
+ * @param {*} obj1 The object 1 with x, y, width, height values.
+ * @param {*} obj2 The object 2 with x, y, width, height values.
+ * @returns Returns true if intersect, otherwise, false.
+ */
 function intersect(obj1, obj2) {
-    let isTouch = true;
+    let isIntersect = true;
 
-    if (obj1.x > obj2.x + obj2.width || obj2.x > obj1.x + obj1.width) isTouch = false;
-    if (obj1.y > obj2.y + obj2.height || obj2.y > obj1.y + obj1.height) isTouch = false;
+    if (obj1.x > obj2.x + obj2.width || obj2.x > obj1.x + obj1.width) isIntersect = false;
+    if (obj1.y > obj2.y + obj2.height || obj2.y > obj1.y + obj1.height) isIntersect = false;
 
-    return isTouch;
+    return isIntersect;
 }
