@@ -1,5 +1,19 @@
 'use strict';
 
+const ARRAY_BLOCKS = [];
+const ARRAY_IMAGES_BLOCKS = {
+    0: "./assets/img/block_red.png",
+    1: "./assets/img/block_orange.png",
+    2: "./assets/img/block_purple.png",
+    3: "./assets/img/block_green.png",
+    4: "./assets/img/block_blue.png",
+};
+
+const BLOCK_WIDTH = 60;
+const BLOCK_HEIGHT = 30;
+const COUNT_ROWS_BLOCKS = 5;
+const COUNT_COLS_BLOCKS = 8;
+
 const BOARD_WIDTH = 800;
 const BOARD_HEIGHT = 700;
 const BORDER_WIDTH = 20;
@@ -18,7 +32,10 @@ const TIME_REPEAT_CONTROLLER = 1000/60; //In milliseconds (ms).
 
 document.addEventListener("DOMContentLoaded", init);
 
-const BOARD = document.querySelector("#board");
+let board = null;
+let ship = null;
+let ball = null;
+
 class Ball {
     constructor(ship, width, height, x, y, image) {
         this.ship = ship;
@@ -47,7 +64,7 @@ class Ball {
             backgroundSize: "cover"
         });
 
-        BOARD.appendChild(this.sprite);
+        board.appendChild(this.sprite);
 
         let ball = this;
 
@@ -81,7 +98,8 @@ class Ball {
             } else if (this.y - BORDER_WIDTH < 0) {
                 this.directionY = 1;
             }
-            
+    
+            //Check if the ball is intersect with the ship.
             if (intersect(this, this.ship)) {
                 //Only change direction when the direction Y is positive, in other words, when the ball goes down.
                 if (this.directionY === 1) {
@@ -131,9 +149,40 @@ class Ball {
                     }
                 }
             }
-    
+
+            let isDestroy = false;
+            let index = 0;
+
+            //Check if the ball intersect with any blocks.
+            while (!isDestroy && index < ARRAY_BLOCKS.length) {
+                if (intersect(this, ARRAY_BLOCKS[index])) {
+                    if (!ARRAY_BLOCKS[index].isDestroy) {
+                        isDestroy = true;
+                        ARRAY_BLOCKS[index].destroy();
+                        let part_block = ARRAY_BLOCKS[index].checkPartIntersect(this);
+
+                        switch(part_block) {
+                            case "bottom":
+                                this.directionY = 1;
+                                break;
+                            case "top":
+                                this.directionY = -1;
+                                break;
+                            case "left":
+                                this.directionX = -1;
+                                break;
+                            case "right":
+                                this.directionX = 1;
+                                break;
+                        }
+                    }
+                }
+
+                index++;
+            } 
+
             this.x += this.speedX * this.directionX;
-            this.y += this.speedY * this.directionY;       
+            this.y += this.speedY * this.directionY;
         } 
 
         this.draw();
@@ -175,10 +224,9 @@ class Ship {
             top: `${this.y}px`,
             backgroundImage: `url(${this.image})`,
             backgroundSize: `${this.width}px ${this.height}px`,
-            backgroundRepeat: "no-repeat"
         });
 
-        BOARD.appendChild(this.sprite);
+        board.appendChild(this.sprite);
     }
 
     draw() {
@@ -206,21 +254,86 @@ class Ship {
 }
 
 class Block {
-    construct
+    constructor(content_blocks, width, height, x, y, image, row, col) {
+        this.content_blocks = content_blocks;
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
+        this.image = image;
+        this.row = row;
+        this.col = col;
+        this.isDestroy = false;
+    }
+
+    create() {
+        this.sprite = document.createElement("div");
+
+        Object.assign(this.sprite.style, {
+            backgroundImage: `url(${this.image})`,
+            backgroundSize: "100% 100%",
+        });
+
+        this.content_blocks.appendChild(this.sprite);
+    }
+
+    destroy() {
+        this.sprite.style.visibility = "hidden";
+        this.isDestroy = true;
+    }
+
+    checkPartIntersect(ball) {
+        let border = "";
+
+        let block_x1 = this.x;
+        let block_x2 = this.x + this.width;
+
+        let block_y1 = this.y;
+        let block_y2 = this.y + this.height;
+
+        let ball_x1 = ball.x;
+        let ball_x2 = ball.x + ball.width;
+
+        let ball_y1 = ball.y;
+        let ball_y2 = ball.y + ball.height;
+
+        let offsetBottom = Math.abs(block_y2 - ball_y1);
+        let offsetTop = Math.abs(block_y1 - ball_y2);
+        let offsetLeft = Math.abs(block_x1 - ball_x2);
+        let offsetRight = Math.abs(block_x2 - ball_x1);
+
+        if (offsetBottom < Math.min(offsetTop, offsetLeft, offsetRight)) {
+            border = "bottom";
+        } else if (offsetTop < Math.min(offsetBottom, offsetLeft, offsetRight)) {
+            border = "top";
+        } else if (offsetLeft < Math.min(offsetTop, offsetBottom, offsetRight)) {
+            border = "left";
+        } else if (offsetRight < Math.min(offsetTop, offsetBottom, offsetLeft)) {
+            border = "right";
+        } 
+
+        return border;
+    }
 }
 
 function init() {
     //Initialize board style.
-    BOARD.style.borderWidth = `${BORDER_WIDTH}px`;
-    BOARD.style.width = `${BOARD_WIDTH}px`;
-    BOARD.style.height = `${BOARD_HEIGHT}px`;
+    board = document.querySelector("#board");
 
-    //Create new ball.
-    let ship = new Ship(SHIP_WIDTH, SHIP_HEIGHT, (BOARD_WIDTH - SHIP_WIDTH) / 2, (BOARD_HEIGHT - SHIP_HEIGHT) / 1.15, "./assets/img/ship.png");
+    board.style.borderWidth = `${BORDER_WIDTH}px`;
+    board.style.width = `${BOARD_WIDTH}px`;
+    board.style.height = `${BOARD_HEIGHT}px`;
+
+    //Create ship.
+    ship = new Ship(SHIP_WIDTH, SHIP_HEIGHT, (BOARD_WIDTH - SHIP_WIDTH) / 2, (BOARD_HEIGHT - SHIP_HEIGHT) / 1.15, "./assets/img/ship.png");
     ship.create();
 
-    let ball = new Ball(ship, BALL_WIDTH_HEIGHT, BALL_WIDTH_HEIGHT, (BOARD_WIDTH - BALL_WIDTH_HEIGHT) / 2, ship.y - BALL_WIDTH_HEIGHT, "./assets/img/ball.png");
+    //Create ball.
+    ball = new Ball(ship, BALL_WIDTH_HEIGHT, BALL_WIDTH_HEIGHT, (BOARD_WIDTH - BALL_WIDTH_HEIGHT) / 2, ship.y - BALL_WIDTH_HEIGHT, "./assets/img/ball.png");
     ball.create();
+
+    //Create content blocks.
+    createContentBlocks();
 
     //Create controllers game.
     //Code 39 =>
@@ -251,6 +364,36 @@ function init() {
         },
         32: function() { ball.speedX = SPEED_DEFAULT_X_BALL; ball.speedY = SPEED_DEFAULT_Y_BALL; }
     }, TIME_REPEAT_CONTROLLER);
+}
+
+function createContentBlocks() {
+    let content = document.createElement("div");
+
+    let width_content = BLOCK_WIDTH * COUNT_COLS_BLOCKS;
+    let height_content = BLOCK_HEIGHT * COUNT_ROWS_BLOCKS;
+
+    Object.assign(content.style, {
+        position: "absolute",
+        display: "grid",
+        width: `${width_content}px`,
+        height: `${height_content}px`,
+        top: `${(BORDER_WIDTH * 5)}px`,
+        left: `${(BOARD_WIDTH / 2) - (width_content / 2)}px`,
+        gridTemplateColumns: `repeat(${COUNT_COLS_BLOCKS}, ${BLOCK_WIDTH}px)`,
+        gridTemplateRows: `repeat(${COUNT_ROWS_BLOCKS}, ${BLOCK_HEIGHT}px)`,
+    }); 
+
+    board.appendChild(content);
+
+    //Create blocks.
+    for (let row = 0; row < COUNT_ROWS_BLOCKS; row++) {
+        for (let col = 0; col < COUNT_COLS_BLOCKS; col++) {
+            let block = new Block(content, BLOCK_WIDTH, BLOCK_HEIGHT, content.offsetLeft + BLOCK_WIDTH * col, content.offsetTop + BLOCK_HEIGHT * row, ARRAY_IMAGES_BLOCKS[row], row, col);
+            block.create(); 
+
+            ARRAY_BLOCKS.push(block);
+        }
+    }
 }
 
 //Keyboard input with customizable repeat (set to 0 for no key repeat).
