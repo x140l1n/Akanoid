@@ -1,6 +1,19 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v8.3.6,
+* Autoprefixer: v10.3.1
+* Browsers: last 4 version
+*/
+
+@font-face {
+  font-family: 'PixelGameFont';
+  src: url('../fonts/PixelGameFont.ttf');
+}
+
 * {
-  box-sizing: border-box;
-  font-family: "Consolas";
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  font-family: "PixelGameFont";
 }
 
 body {
@@ -27,40 +40,73 @@ body {
   -webkit-font-smoothing: antialiased;
   -webkit-user-select: none;
   -moz-user-select: none;
-  user-select: none;
+  -ms-user-select: none;
+      user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 @media (max-width: 940px), (max-height: 600px) {
   .game {
-    transform: scale(0.7);
+    -webkit-transform: scale(0.7);
+        -ms-transform: scale(0.7);
+            transform: scale(0.7);
   }
 }
 
 @media (max-width: 540px), (max-height: 540px) {
   .game {
-    transform: scale(0.5);
+    -webkit-transform: scale(0.5);
+        -ms-transform: scale(0.5);
+            transform: scale(0.5);
   }
 }
 
 @media (max-width: 380px), (max-height: 380px) {
   .game {
-    transform: scale(0.4);
+    -webkit-transform: scale(0.4);
+        -ms-transform: scale(0.4);
+            transform: scale(0.4);
   }
 }
 
 @media (max-width: 280px), (max-height: 280px) {
   .game {
-    transform: scale(0.3);
+    -webkit-transform: scale(0.3);
+        -ms-transform: scale(0.3);
+            transform: scale(0.3);
   }
 }
 
 .board {
   background-image: url("../img/bg.png");
   border: solid transparent;
-  border-image: url("../img/border.png") 25% round;
+  -o-border-image: url("../img/border.png") 25% round;
+     border-image: url("../img/border.png") 25% round;
 }
+
+.stats {
+  position: absolute; 
+  top: -35px;
+  width: 100%;
+  color: white;
+}
+
+.stats .lifes {
+  font-size: 21px;
+}
+
+.stats .lifes .img-lifes {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.stats .lifes .img-lifes img {
+  margin: 5px;
+}
+
 /***** End GAME & BOARD *****/
 
 /***** MUTE *****/
@@ -73,9 +119,11 @@ body {
   opacity: 0.5;
   cursor: pointer;
   -webkit-user-select: none;
-  user-select: none;
+  -moz-user-select: none;
+   -ms-user-select: none;
+       user-select: none;
   -webkit-transition: opacity 0.1s linear;
-  -moz-transition: opacity 0.1s linear;
+  -o-transition: opacity 0.1s linear;
   transition: opacity 0.1s linear;
 }
 
