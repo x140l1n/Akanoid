@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="assets/img/ball.png" type="image/png">    
     <link rel="stylesheet" href="assets/css/normalize.css"/>
     <link rel="stylesheet" href="assets/css/style.css"/>
     <title>Arkanoid</title>
@@ -24,18 +25,26 @@
             <div class="stats">
                 <table>
                     <tr>
-                        <td class="lifes">
-                            LIFES:
-                            <div id="lifes" class="img-lifes">
-                            </div>
+                        <td class="timer">
+                            Tiempo: <span id="timer">00:00</span>
+                        </td>
+                        <td class="plus">
+                            <span id="timer-plus">+00:00</span>
                         </td>
                     </tr>
                 </table>
             </div>
             <div id="board" class="board">
+                <div id="board-introduction" class="board-introduction">
+                    
+                </div>
+                <div id="board-game">
+
+                </div>
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="assets/js/script.js"></script>
+    <script type="text/javascript" src="assets/js/index.js"></script>
+    <script type="text/javascript" src="assets/js/game.js"></script>
 </body>
 </html>

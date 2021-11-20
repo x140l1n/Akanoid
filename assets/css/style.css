@@ -29,7 +29,7 @@ body {
   overflow: hidden;
 }
 
-/***** GAME & BOARD *****/
+/***** GAME & BOARD & STATS *****/
 .game {
   position: absolute;
   left: 50%;
@@ -90,24 +90,40 @@ body {
   top: -35px;
   width: 100%;
   color: white;
-}
-
-.stats .lifes {
   font-size: 21px;
 }
 
-.stats .lifes .img-lifes {
+.stats table {
+  width: 100%;
+}
+
+.stats table .timer {
+  width: 50%;
+  text-align: left;
+}
+
+.stats table .plus {
+  width: 50%;
+  text-align: right;
+
+}
+.stats table .lifes .img-lifes {
   display: -webkit-inline-box;
   display: -ms-inline-flexbox;
   display: inline-flex;
   vertical-align: middle;
 }
 
-.stats .lifes .img-lifes img {
+.stats table .lifes .img-lifes img {
   margin: 5px;
 }
 
-/***** End GAME & BOARD *****/
+.board-introduction {
+  width: 100%;
+  height: 100%;
+  color: white;
+}
+/***** End GAME & BOARD & STATS *****/
 
 /***** MUTE *****/
 .mute {

@@ -1,22 +1,29 @@
 "use strict";
 
-const ARRAY_BLOCKS = [];
+const ARRAY_BLOCKS_DESTROYABLE = [];
+const ARRAY_BLOCKS_DESTROYED = [];
 const ARRAY_IMAGES_BLOCKS = {
   0: "./assets/img/block_red.png",
   1: "./assets/img/block_orange.png",
   2: "./assets/img/block_purple.png",
   3: "./assets/img/block_green.png",
-  4: "./assets/img/block_blue.png",
+  4: "./assets/img/block_cyan.png",
 };
+
+const ARRAY_FRASE = {
+  0: { name: "FLEXIBILIDAD", color: "red" },
+  1: { name: "RESPONSABILIDAD", color: "orange" },
+  2: { name: "AUTONOMIA", color: "purple" },
+  3: { name: "SOCIAL", color: "green" },
+  4: { name: "EVOLUCION", color: "cyan" },
+};
+
+const PLUS_TIME = 15;
 
 const BLOCK_WIDTH = 55;
 const BLOCK_HEIGHT = 30;
 const COUNT_ROWS_BLOCKS = 5;
 const COUNT_COLS_BLOCKS = 12;
-
-const BOARD_WIDTH = 800;
-const BOARD_HEIGHT = 700;
-const BORDER_WIDTH = 20;
 
 const BALL_WIDTH_HEIGHT = 15;
 const SPEED_DEFAULT_X_BALL = 5;
@@ -24,15 +31,16 @@ const SPEED_DEFAULT_Y_BALL = 10;
 
 const SHIP_WIDTH = 120;
 const SHIP_HEIGHT = 20;
-const SHIP_MAX_LIFES = 3;
 const SPEED_DEFAULT_SHIP = 15;
 
 const TIME_UPDATE_BALL = 1000 / 60; //In milliseconds (ms).
 const TIME_REPEAT_CONTROLLER = 1000 / 60; //In milliseconds (ms).
 
-let board = null;
+let board_game = null;
 let ship = null;
 let ball = null;
+let contentBlocks = null;
+let cronometer = null;
 
 class Ball {
   constructor(
@@ -77,7 +85,7 @@ class Ball {
       backgroundSize: "cover",
     });
 
-    board.appendChild(this.sprite);
+    board_game.appendChild(this.sprite);
   }
 
   draw() {
@@ -165,18 +173,17 @@ class Ball {
       let indexBlocks = 0;
 
       //Check if the ball intersect with any blocks.
-      while (!isDestroy && indexBlocks < ARRAY_BLOCKS.length) {
-        if (
-          ARRAY_BLOCKS[indexBlocks] != null &&
-          intersect(this, ARRAY_BLOCKS[indexBlocks])
-        ) {
-          if (!ARRAY_BLOCKS[indexBlocks].isDestroy) {
-            let destroy = ARRAY_BLOCKS[indexBlocks].checkPartIntersect(this);
+      while (!isDestroy && indexBlocks < ARRAY_BLOCKS_DESTROYABLE.length) {
+        if (!ARRAY_BLOCKS_DESTROYABLE[indexBlocks].isDestroy) {
+          if (intersect(this, ARRAY_BLOCKS_DESTROYABLE[indexBlocks])) {
+            isDestroy =
+              ARRAY_BLOCKS_DESTROYABLE[indexBlocks].checkBordertIntersect(this);
 
-            if (destroy) {
-              isDestroy = true;
-              ARRAY_BLOCKS[indexBlocks].destroy();
-              ARRAY_BLOCKS[indexBlocks] = null;
+            if (isDestroy) {
+              ARRAY_BLOCKS_DESTROYABLE[indexBlocks].destroy();
+              ARRAY_BLOCKS_DESTROYED.push(
+                ARRAY_BLOCKS_DESTROYABLE[indexBlocks]
+              );
             }
           }
         }
@@ -199,18 +206,18 @@ class Ball {
     this.x = this.default_position_x;
     this.y = this.default_position_y;
 
-    clearInterval(this.intervalBall);
+    if (this.interval_ball) clearInterval(this.interval_ball);
 
-    board.removeChild(this.sprite);
+    board_game.removeChild(this.sprite);
 
     this.create();
   }
 }
+
 class Ship {
-  constructor(width, height, lifes, x, y, image, speed) {
+  constructor(width, height, x, y, image, speed) {
     this.width = width;
     this.height = height;
-    this.lifes = lifes;
     this.x = x;
     this.y = y;
     this.default_position_x = x;
@@ -219,7 +226,8 @@ class Ship {
     this.directionX = 1;
     this.speed = speed;
     this.isMove = false;
-    this.isDie = false;
+    this.plusTimeMinutes = 0;
+    this.plusTimeSeconds = 0;
   }
 
   create() {
@@ -235,7 +243,7 @@ class Ship {
       backgroundSize: `${this.width}px ${this.height}px`,
     });
 
-    board.appendChild(this.sprite);
+    board_game.appendChild(this.sprite);
   }
 
   draw() {
@@ -259,20 +267,25 @@ class Ship {
   }
 
   die() {
-    this.isDie = true;
-    board.removeChild(this.sprite);
+    board_game.removeChild(this.sprite);
 
-    if (this.lifes !== 0) {
-      this.lifes--;
-      //Remove image life.
-      document
-        .querySelector("#lifes")
-        .removeChild(document.querySelectorAll("#lifes img")[0]);
-    } else {
-      //Game over.
+    //Add plus time.
+    this.plusTimeSeconds += PLUS_TIME;
+
+    if (this.plusTimeSeconds == 60) {
+      this.plusTimeMinutes++;
+      this.plusTimeSeconds = 0;
     }
 
-    this.isDie = false;
+    document.querySelector("#timer-plus").innerText = `+${
+      this.plusTimeMinutes < 10
+        ? `0${this.plusTimeMinutes}`
+        : this.plusTimeMinutes
+    }:${
+      this.plusTimeSeconds < 10
+        ? `0${this.plusTimeSeconds}`
+        : this.plusTimeSeconds
+    }`;
 
     this.x = this.default_position_x;
     this.y = this.default_position_y;
@@ -280,6 +293,7 @@ class Ship {
     this.create();
   }
 }
+
 class Block {
   constructor(
     content_blocks,
@@ -322,64 +336,89 @@ class Block {
     this.isDestroy = true;
   }
 
-  checkPartIntersect(ball) {
-    let destroy = false;
+  checkBordertIntersect(ball) {
+    let isDestroy = true;
 
-    let block_x1 = this.x;
-    let block_x2 = this.x + this.width;
+    let block_rect = this.sprite.getBoundingClientRect();
+    let ball_rect = ball.sprite.getBoundingClientRect();
 
-    let block_y1 = this.y;
-    let block_y2 = this.y + this.height;
+    let offsetBottom = Math.abs(block_rect.bottom - ball_rect.top);
+    let offsetTop = Math.abs(block_rect.top - ball_rect.bottom);
+    let offsetRight = Math.abs(block_rect.right - ball_rect.left);
+    let offsetLeft = Math.abs(block_rect.left - ball_rect.right);
 
-    let ball_x1 = ball.x;
-    let ball_x2 = ball.x + ball.width;
-
-    let ball_y1 = ball.y;
-    let ball_y2 = ball.y + ball.height;
-
-    let offsetBottom = Math.abs(block_y2 - ball_y1);
-    let offsetTop = Math.abs(block_y1 - ball_y2);
-    let offsetLeft = Math.abs(block_x1 - ball_x2);
-    let offsetRight = Math.abs(block_x2 - ball_x1);
-
-    if (
-      offsetBottom !== 0 &&
-      offsetTop !== 0 &&
-      offsetLeft !== 0 &&
-      offsetRight !== 0
-    ) {
-      if (offsetBottom < Math.min(offsetTop, offsetLeft, offsetRight)) {
+    if (offsetBottom < Math.min(offsetTop, offsetLeft, offsetRight)) {
+      if (ball.directionY == -1) {
         ball.directionY = 1;
-      } else if (offsetTop < Math.min(offsetBottom, offsetLeft, offsetRight)) {
-        ball.directionY = -1;
-      } else if (offsetLeft < Math.min(offsetTop, offsetBottom, offsetRight)) {
-        ball.directionX = -1;
-      } else if (offsetRight < Math.min(offsetTop, offsetBottom, offsetLeft)) {
-        ball.directionX = 1;
+      } else {
+        isDestroy = false;
       }
-
-      destroy = true;
+    } else if (offsetTop < Math.min(offsetBottom, offsetLeft, offsetRight)) {
+      if (ball.directionY == 1) {
+        ball.directionY = -1;
+      } else {
+        isDestroy = false;
+      }
+    } else if (offsetLeft < Math.min(offsetTop, offsetBottom, offsetRight)) {
+      if (ball.directionX == 1) {
+        ball.directionX = -1;
+      } else {
+        isDestroy = false;
+      }
+    } else if (offsetRight < Math.min(offsetTop, offsetBottom, offsetLeft)) {
+      if (ball.directionX == -1) {
+        ball.directionX = 1;
+      } else {
+        isDestroy = false;
+      }
     }
 
-    return destroy;
+    return isDestroy;
   }
 }
 
-document.addEventListener("DOMContentLoaded", initGame);
+class Cronometer {
+  constructor() {
+    this.minutes = 0;
+    this.seconds = 0;
+  }
+
+  start() {
+    if (!this.interval_crono) {
+      this.interval_crono = setInterval(() => {
+        this.seconds++;
+
+        if (this.seconds > 60) {
+          this.seconds = 0;
+          this.minutes++;
+        }
+
+        document.querySelector("#timer").innerText = `${
+          this.minutes < 10 ? `0${this.minutes}` : this.minutes
+        }:${this.seconds < 10 ? `0${this.seconds}` : this.seconds}`;
+      }, 1000);
+    }
+  }
+
+  stop() {
+    if (this.interval_crono) clearInterval(this.interval_crono);
+  }
+
+  reset() {
+    this.minutes = 0;
+    this.seconds = 0;
+  }
+}
 
 function initGame() {
-  //Initialize board style.
-  board = document.querySelector("#board");
+  board_game = document.querySelector("#board-game");
 
-  board.style.borderWidth = `${BORDER_WIDTH}px`;
-  board.style.width = `${BOARD_WIDTH}px`;
-  board.style.height = `${BOARD_HEIGHT}px`;
+  if (!cronometer) cronometer = new Cronometer();
 
   //Create ship.
   ship = new Ship(
     SHIP_WIDTH,
     SHIP_HEIGHT,
-    SHIP_MAX_LIFES,
     (BOARD_WIDTH - SHIP_WIDTH) / 2,
     (BOARD_HEIGHT - SHIP_HEIGHT) / 1.15,
     "./assets/img/ship.png",
@@ -401,16 +440,11 @@ function initGame() {
   );
   ball.create();
 
-  //Draw lifes.
-  for (let i = 0; i < ship.lifes; i++) {
-    let life = document.createElement("img");
-    life.src = "./assets/img/ship.png";
-
-    document.querySelector("#lifes").appendChild(life);
-  }
-
   //Create content blocks.
   createContentBlocks();
+
+  //Create content frase.
+  createContentFrase();
 
   //Create controllers game.
   //Code 39 =>
@@ -419,18 +453,18 @@ function initGame() {
   keyboardController(
     {
       37: function () {
-        if (!ship.isDie) {
+        if (ship != null) {
           ship.directionX = -1;
           ship.update();
-
+  
           if (ball.speedX === 0 && ball.speedY === 0 && ship.isMove) {
             ball.x -= SPEED_DEFAULT_SHIP;
             ball.update();
           }
-        }
+        } 
       },
       39: function () {
-        if (!ship.isDie) {
+        if (ship != null) {
           ship.directionX = 1;
           ship.update();
 
@@ -441,13 +475,19 @@ function initGame() {
         }
       },
       32: function () {
-        if (!ship.isDie && ball.speedX === 0 && ball.speedY === 0) {
-          ball.speedX = SPEED_DEFAULT_X_BALL;
-          ball.speedY = SPEED_DEFAULT_Y_BALL;
+        if (ball != null) {
+          if (ball.speedX === 0 && ball.speedY === 0) {
+            cronometer.start();
 
-          ball.intervalBall = setInterval(function () {
-            ball.update();
-          }, ball.time_update);
+            ball.speedX = SPEED_DEFAULT_X_BALL + ball.plusSpeed;
+            ball.speedY = SPEED_DEFAULT_Y_BALL + ball.plusSpeed;
+
+            ball.interval_ball = setInterval(function () {
+              if (!isFinishGame()) {
+                ball.update();
+              }
+            }, ball.time_update);
+          }
         }
       },
     },
@@ -456,24 +496,25 @@ function initGame() {
 }
 
 function createContentBlocks() {
-  let content = document.createElement("div");
+  contentBlocks = document.createElement("div");
 
   let width_content = BLOCK_WIDTH * COUNT_COLS_BLOCKS;
   let height_content = BLOCK_HEIGHT * COUNT_ROWS_BLOCKS;
 
   //Create content grid of blocks.
-  Object.assign(content.style, {
+  Object.assign(contentBlocks.style, {
     position: "absolute",
     display: "grid",
     width: `${width_content}px`,
     height: `${height_content}px`,
     top: `${BORDER_WIDTH * 5}px`,
+    zIndex: 2,
     left: `${BOARD_WIDTH / 2 - width_content / 2}px`,
     gridTemplateColumns: `repeat(${COUNT_COLS_BLOCKS}, ${BLOCK_WIDTH}px)`,
     gridTemplateRows: `repeat(${COUNT_ROWS_BLOCKS}, ${BLOCK_HEIGHT}px)`,
   });
 
-  board.appendChild(content);
+  board_game.appendChild(contentBlocks);
 
   //Create blocks.
   for (let row = 0; row < COUNT_ROWS_BLOCKS; row++) {
@@ -497,22 +538,64 @@ function createContentBlocks() {
       }
 
       let block = new Block(
-        content,
+        contentBlocks,
         BLOCK_WIDTH,
         BLOCK_HEIGHT,
-        content.offsetLeft + BLOCK_WIDTH * col,
-        content.offsetTop + BLOCK_HEIGHT * row,
+        contentBlocks.offsetLeft + BLOCK_WIDTH * col,
+        contentBlocks.offsetTop + BLOCK_HEIGHT * row,
         ARRAY_IMAGES_BLOCKS[row],
         row,
         col,
         isDestroy,
         isVisible
       );
+
       block.create();
 
-      ARRAY_BLOCKS.push(block);
+      if (isVisible && !isDestroy) {
+        ARRAY_BLOCKS_DESTROYABLE.push(block);
+      }
     }
   }
+}
+
+function createContentFrase() {
+  let contentFrase = document.createElement("div");
+
+  let width_content = BLOCK_WIDTH * COUNT_COLS_BLOCKS;
+  let height_content = BLOCK_HEIGHT * COUNT_ROWS_BLOCKS;
+
+  Object.assign(contentFrase.style, {
+    position: "absolute",
+    display: "grid",
+    width: `${width_content}px`,
+    height: `${height_content}px`,
+    zIndex: 1,
+    top: `${BORDER_WIDTH * 5}px`,
+    left: `${BOARD_WIDTH / 2 - width_content / 2}px`,
+    gridTemplateColumns: "1fr",
+    gridTemplateRows: `repeat(${COUNT_ROWS_BLOCKS}, ${BLOCK_HEIGHT}px)`,
+  });
+
+  //Create frase.
+  for (let row = 0; row < COUNT_ROWS_BLOCKS; row++) {
+    let frase = ARRAY_FRASE[row];
+
+    let divFrase = document.createElement("div");
+
+    Object.assign(divFrase.style, {
+      color: frase["color"],
+      fontSize: "25px",
+      textAlign: "center",
+      paddingTop: "6px",
+      letterSpacing: "5px"
+    });
+
+    divFrase.innerText = frase["name"];
+    contentFrase.appendChild(divFrase);
+  }
+
+  board_game.appendChild(contentFrase);
 }
 
 //Keyboard input with customizable repeat (set to 0 for no key repeat).
@@ -568,18 +651,74 @@ function keyboardController(keys, repeat) {
 }
 
 /**
- * Check if two objects is intersect.
- * @param {*} obj1 The object 1 with x, y, width, height values.
- * @param {*} obj2 The object 2 with x, y, width, height values.
+ * Check if two elements is intersect.
+ * @param {*} element1 The object 1 with x, y, width, height values.
+ * @param {*} element2 The object 2 with x, y, width, height values.
  * @returns Returns true if intersect, otherwise, false.
  */
-function intersect(obj1, obj2) {
+function intersect(element1, element2) {
   let isIntersect = true;
 
-  if (obj1.x > obj2.x + obj2.width || obj2.x > obj1.x + obj1.width)
+  if (
+    element1.x > element2.x + element2.width ||
+    element2.x > element1.x + element1.width
+  )
     isIntersect = false;
-  if (obj1.y > obj2.y + obj2.height || obj2.y > obj1.y + obj1.height)
+  if (
+    element1.y > element2.y + element2.height ||
+    element2.y > element1.y + element1.height
+  )
     isIntersect = false;
 
   return isIntersect;
+}
+
+//Check if the game is finish.
+function isFinishGame() {
+  let isFinish = false;
+  //If the length of array blocks destroyed is equal than array blocks.
+  if (Object.values(ARRAY_BLOCKS_DESTROYED).length === Object.values(ARRAY_BLOCKS_DESTROYABLE).length) {
+    //Finish game.
+    cronometer.stop();
+    
+    clearInterval(cronometer.interval_crono);
+    clearInterval(ball.interval_ball);
+
+    board_game.removeChild(ship.sprite);
+    board_game.removeChild(ball.sprite);
+    board_game.removeChild(contentBlocks);
+
+    let total_minutes = cronometer.minutes + ship.plusTimeMinutes;
+    let total_seconds = cronometer.minutes + ship.plusTimeSeconds;
+
+    //Send the score to backend.
+    sendScore(total_minutes, total_seconds);
+
+    ARRAY_BLOCKS_DESTROYABLE.splice(0, ARRAY_BLOCKS_DESTROYABLE.length);
+    ARRAY_BLOCKS_DESTROYED.splice(0, ARRAY_BLOCKS_DESTROYED.length);
+
+    ship = null;
+    ball = null;
+
+    document.querySelector("#timer").innerText = "00:00";
+    document.querySelector("#timer-plus").innerText = "00:00";
+
+    cronometer.reset();
+
+    isFinish = true;
+  }
+
+  return isFinish;
+}
+
+/**
+ * Send the score to backend.
+ * @param {Number} total_minutes The total minutes of player.
+ * @param {Number} total_seconds The total seconds of player.
+ */
+function sendScore(total_minutes, total_seconds) {
+    //If the length of array blocks destroyed is equal than array blocks.
+    if (Object.values(ARRAY_BLOCKS_DESTROYED).length === Object.values(ARRAY_BLOCKS_DESTROYABLE).length) {
+      
+    }
 }
