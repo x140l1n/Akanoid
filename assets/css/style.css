@@ -6,13 +6,13 @@
 */
 
 @font-face {
-  font-family: 'PixelGameFont';
-  src: url('../fonts/PixelGameFont.ttf');
+  font-family: "PixelGameFont";
+  src: url("../fonts/PixelGameFont.ttf");
 }
 
 * {
   -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   font-family: "PixelGameFont";
 }
 
@@ -41,40 +41,77 @@ body {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-      user-select: none;
+  user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.board-introduction {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: white;
+}
+
+.board-introduction > img {
+  margin: auto;
+}
+
+.board-introduction > button {
+  margin: auto;
+}
+
+.board-game {
+  width: 100%;
+  height: 100%;
+}
+
+.board-game .countdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  padding-left: 20px;
+  font-size: 150px;
+  line-height: 120px;
+  height: 80px;
+  z-index: 3;
+  display: inline-block;
+  transition: opacity 1s;
 }
 
 @media (max-width: 940px), (max-height: 600px) {
   .game {
     -webkit-transform: scale(0.7);
-        -ms-transform: scale(0.7);
-            transform: scale(0.7);
+    -ms-transform: scale(0.7);
+    transform: scale(0.7);
   }
 }
 
 @media (max-width: 540px), (max-height: 540px) {
   .game {
     -webkit-transform: scale(0.5);
-        -ms-transform: scale(0.5);
-            transform: scale(0.5);
+    -ms-transform: scale(0.5);
+    transform: scale(0.5);
   }
 }
 
 @media (max-width: 380px), (max-height: 380px) {
   .game {
     -webkit-transform: scale(0.4);
-        -ms-transform: scale(0.4);
-            transform: scale(0.4);
+    -ms-transform: scale(0.4);
+    transform: scale(0.4);
   }
 }
 
 @media (max-width: 280px), (max-height: 280px) {
   .game {
     -webkit-transform: scale(0.3);
-        -ms-transform: scale(0.3);
-            transform: scale(0.3);
+    -ms-transform: scale(0.3);
+    transform: scale(0.3);
   }
 }
 
@@ -82,15 +119,19 @@ body {
   background-image: url("../img/bg.png");
   border: solid transparent;
   -o-border-image: url("../img/border.png") 25% round;
-     border-image: url("../img/border.png") 25% round;
+  border-image: url("../img/border.png") 25% round;
 }
 
 .stats {
-  position: absolute; 
-  top: -35px;
+  position: absolute;
+  top: -55px;
   width: 100%;
   color: white;
-  font-size: 21px;
+  font-size: 26px;
+}
+
+.stats i{
+  font-size: 36px;
 }
 
 .stats table {
@@ -102,11 +143,6 @@ body {
   text-align: left;
 }
 
-.stats table .plus {
-  width: 50%;
-  text-align: right;
-
-}
 .stats table .lifes .img-lifes {
   display: -webkit-inline-box;
   display: -ms-inline-flexbox;
@@ -118,32 +154,31 @@ body {
   margin: 5px;
 }
 
-.board-introduction {
-  width: 100%;
-  height: 100%;
+#ship:before {
+  position: absolute;
+  visibility: visible !important;
+  top: -40px;
+  right: -35px;
+  content: attr(data-before);
   color: white;
 }
 /***** End GAME & BOARD & STATS *****/
 
-/***** MUTE *****/
-.mute {
-  position: absolute;
-  width: 38px;
-  height: 38px;
-  right: 15px;
-  top: 15px;
-  opacity: 0.5;
-  cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
-  -webkit-transition: opacity 0.1s linear;
-  -o-transition: opacity 0.1s linear;
-  transition: opacity 0.1s linear;
+@keyframes createSprite {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
-.mute:hover {
-  opacity: 1;
+@keyframes boardShadow {
+  50% {
+    box-shadow: inset 0px 0px 20px 10px #FF0000;
+  }
 }
-/***** End MUTE *****/
+
+/***** PIXEL BUTTON *****/
+
+/***** End PIXEL BUTTON *****/

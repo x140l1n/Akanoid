@@ -11,19 +11,19 @@ const ARRAY_IMAGES_BLOCKS = {
 };
 
 const ARRAY_FRASE = {
-  0: { name: "FLEXIBILIDAD", color: "red" },
-  1: { name: "RESPONSABILIDAD", color: "orange" },
+  0: { name: "FLEXIBILITAT", color: "red" },
+  1: { name: "RESPONSABILITAT", color: "orange" },
   2: { name: "AUTONOMIA", color: "purple" },
-  3: { name: "SOCIAL", color: "green" },
-  4: { name: "EVOLUCION", color: "cyan" },
+  3: { name: "SOCIABILITAT", color: "green" },
+  4: { name: "EVOLUCIO", color: "cyan" },
 };
 
-const PLUS_TIME = 15;
+const SUBSTRACT_SECONDS = 15;
 
-const BLOCK_WIDTH = 55;
+const BLOCK_WIDTH = 50;
 const BLOCK_HEIGHT = 30;
 const COUNT_ROWS_BLOCKS = 5;
-const COUNT_COLS_BLOCKS = 12;
+const COUNT_COLS_BLOCKS = 14;
 
 const BALL_WIDTH_HEIGHT = 15;
 const SPEED_DEFAULT_X_BALL = 5;
@@ -33,14 +33,17 @@ const SHIP_WIDTH = 120;
 const SHIP_HEIGHT = 20;
 const SPEED_DEFAULT_SHIP = 15;
 
-const TIME_UPDATE_BALL = 1000 / 60; //In milliseconds (ms).
+const TIME_UPDATE_BALL = 1000 / 100; //In milliseconds (ms).
 const TIME_REPEAT_CONTROLLER = 1000 / 60; //In milliseconds (ms).
+
+const TIMER_MINUTES_DEFAULT = 2;
+const TIMER_SECONDS_DEFAULT = 0;
 
 let board_game = null;
 let ship = null;
 let ball = null;
 let contentBlocks = null;
-let cronometer = null;
+let timer = null;
 
 class Ball {
   constructor(
@@ -72,20 +75,33 @@ class Ball {
   }
 
   create() {
-    this.sprite = document.createElement("div");
+    if (!this.sprite) {
+      this.sprite = document.createElement("div");
 
-    Object.assign(this.sprite.style, {
-      position: "absolute",
-      borderRadius: "50%",
-      width: `${this.width}px`,
-      height: `${this.height}px`,
-      left: `${this.default_position_x}px`,
-      top: `${this.default_position_y}px`,
-      backgroundImage: `url(${this.image})`,
-      backgroundSize: "cover",
-    });
+      Object.assign(this.sprite.style, {
+        position: "absolute",
+        borderRadius: "50%",
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        left: `${this.default_position_x}px`,
+        top: `${this.default_position_y}px`,
+        backgroundImage: `url(${this.image})`,
+        backgroundSize: "cover",
+        animation: "createSprite .80s",
+      });      
+      
+      board_game.appendChild(this.sprite);
+    } else {
+      Object.assign(this.sprite.style, {
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        left: `${this.default_position_x}px`,
+        top: `${this.default_position_y}px`,
+        animation: "",
+      });
 
-    board_game.appendChild(this.sprite);
+      this.draw();
+    }
   }
 
   draw() {
@@ -168,27 +184,52 @@ class Ball {
           }
         }
       }
-
-      let isDestroy = false;
+      
       let indexBlocks = 0;
+      let blocksTouch = [];
+      let blockDestroy = null;
 
-      //Check if the ball intersect with any blocks.
-      while (!isDestroy && indexBlocks < ARRAY_BLOCKS_DESTROYABLE.length) {
+      //Loop to check if the ball intersect with any blocks.
+      while (indexBlocks < ARRAY_BLOCKS_DESTROYABLE.length) {
         if (!ARRAY_BLOCKS_DESTROYABLE[indexBlocks].isDestroy) {
           if (intersect(this, ARRAY_BLOCKS_DESTROYABLE[indexBlocks])) {
-            isDestroy =
-              ARRAY_BLOCKS_DESTROYABLE[indexBlocks].checkBordertIntersect(this);
-
-            if (isDestroy) {
-              ARRAY_BLOCKS_DESTROYABLE[indexBlocks].destroy();
-              ARRAY_BLOCKS_DESTROYED.push(
-                ARRAY_BLOCKS_DESTROYABLE[indexBlocks]
-              );
-            }
+            blocksTouch.push(ARRAY_BLOCKS_DESTROYABLE[indexBlocks]);
           }
         }
 
         indexBlocks++;
+      }
+
+      //If ball touch more than one block. Check which block will destroy.
+      if (blocksTouch.length > 1) {
+        let lessOffset = Number.MAX_VALUE;
+
+        for(let i = 0; i < blocksTouch.length; i++) {
+          let block_rect = blocksTouch[i].sprite.getBoundingClientRect();
+          let ball_rect = ball.sprite.getBoundingClientRect();
+      
+          let offsetBottom = Math.abs(block_rect.bottom - ball_rect.bottom);
+          let offsetTop = Math.abs(block_rect.top - ball_rect.top);
+          let offsetRight = Math.abs(block_rect.right - ball_rect.right);
+          let offsetLeft = Math.abs(block_rect.left - ball_rect.left);
+
+          let totalOffset = offsetBottom + offsetTop + offsetRight + offsetLeft;
+
+          if (totalOffset < lessOffset) {
+            blockDestroy = blocksTouch[i];
+            lessOffset = totalOffset;
+          }
+
+        } 
+      } else if (blocksTouch.length == 1) {
+        blockDestroy = blocksTouch[0];
+      }
+
+      //If ball is intersect any block.
+      if (blockDestroy !== null) {
+        blockDestroy.destroy();
+        blockDestroy.checkBordertIntersect(this);
+        ARRAY_BLOCKS_DESTROYED.push(blockDestroy);
       }
 
       this.x += this.speedX * this.directionX;
@@ -208,8 +249,6 @@ class Ball {
 
     if (this.interval_ball) clearInterval(this.interval_ball);
 
-    board_game.removeChild(this.sprite);
-
     this.create();
   }
 }
@@ -226,24 +265,51 @@ class Ship {
     this.directionX = 1;
     this.speed = speed;
     this.isMove = false;
-    this.plusTimeMinutes = 0;
-    this.plusTimeSeconds = 0;
   }
 
   create() {
-    this.sprite = document.createElement("div");
+    if (!this.sprite) {
+      this.sprite = document.createElement("div");
+      this.sprite.id = "ship";
+      this.sprite.dataset.before = "";
+      
+      Object.assign(this.sprite.style, {
+        position: "absolute",
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        left: `${this.default_position_x}px`,
+        top: `${this.default_position_y}px`,
+        backgroundImage: `url(${this.image})`,
+        backgroundSize: `${this.width}px ${this.height}px`,
+        animation: "createSprite .80s",
+      });
 
-    Object.assign(this.sprite.style, {
-      position: "absolute",
-      width: `${this.width}px`,
-      height: `${this.height}px`,
-      left: `${this.default_position_x}px`,
-      top: `${this.default_position_y}px`,
-      backgroundImage: `url(${this.image})`,
-      backgroundSize: `${this.width}px ${this.height}px`,
-    });
+      //Add arrow direction shoot.
+      this.arrow_direction_shoot = document.createElement("i");
+      this.arrow_direction_shoot.classList.add("fas", "fa-long-arrow-alt-right");
+      this.arrow_direction_shoot.style.visibility = "hidden";
 
-    board_game.appendChild(this.sprite);
+      this.sprite.appendChild(this.arrow_direction_shoot);
+
+      board_game.appendChild(this.sprite);
+
+    } else {
+      Object.assign(this.sprite.style, {
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        left: `${this.default_position_x}px`,
+        top: `${this.default_position_y}px`,
+        animation: "",
+      });
+
+      //Make visible the arrow direction shoot.
+      this.arrow_direction_shoot.style.visibility = "visible";
+
+      this.draw();
+    }
+
+    //Set default direction arrow (right).
+    this.setArrowDirection(1);
   }
 
   draw() {
@@ -266,29 +332,75 @@ class Ship {
     }
   }
 
-  die() {
-    board_game.removeChild(this.sprite);
+  setArrowDirection(direction) {
+    //If is -1 is left. 
+    //If is 1 is right.
+    if (direction === -1) {
+      Object.assign(this.arrow_direction_shoot.style, {
+        color: "white",
+        fontSize: "50px",
+        position: "absolute",
+        left: `${(this.width - (this.width - 32)) / 2}px`,
+        top: `-70px`,
+        transform: "rotate(-115deg)",
+      });
 
-    //Add plus time.
-    this.plusTimeSeconds += PLUS_TIME;
+      this.direction_shoot = -1;
+    } else {
+      Object.assign(this.arrow_direction_shoot.style, {
+        color: "white",
+        fontSize: "50px",
+        position: "absolute",
+        left: `${(this.width - 10) / 2}px`,
+        top: `-70px`,
+        transform: "rotate(-65deg)",
+      });
 
-    if (this.plusTimeSeconds == 60) {
-      this.plusTimeMinutes++;
-      this.plusTimeSeconds = 0;
+      this.direction_shoot = 1;
     }
+  }
 
-    document.querySelector("#timer-plus").innerText = `+${
-      this.plusTimeMinutes < 10
-        ? `0${this.plusTimeMinutes}`
-        : this.plusTimeMinutes
-    }:${
-      this.plusTimeSeconds < 10
-        ? `0${this.plusTimeSeconds}`
-        : this.plusTimeSeconds
-    }`;
+  die() {
+    //Add blink effect on ship.
+    let interval_blink = setInterval(() => {
+      this.sprite.style.visibility =
+        this.sprite.style.visibility === "hidden" ? "" : "hidden";
+    }, 100);
+
+    setTimeout(() => {
+      clearInterval(interval_blink);
+      this.sprite.style.visibility = "visible";
+    }, 1000);
+
+    setTimeout(() => {
+      //Remove the message from ship.
+      this.sprite.dataset.before = "";
+    }, 2000);
+
+    //Add some message to ship.
+    this.sprite.dataset.before = "-15 s";
 
     this.x = this.default_position_x;
     this.y = this.default_position_y;
+    
+    //Substract seconds of timer.
+    let diff_seconds = timer.seconds - SUBSTRACT_SECONDS;
+
+    if (diff_seconds < 0) {
+      timer.seconds = 59 - Math.abs(diff_seconds);
+
+      timer.minutes--;
+    } else {
+      timer.seconds = diff_seconds; 
+    }
+
+    if (timer.minutes < 0) {
+      document.querySelector("#timer").innerText = "00:00";
+    } else {
+      document.querySelector("#timer").innerText = `${
+        timer.minutes < 10 ? `0${timer.minutes}` : timer.minutes
+      }:${timer.seconds < 10 ? `0${timer.seconds}` : timer.seconds}`;
+    }
 
     this.create();
   }
@@ -320,25 +432,28 @@ class Block {
   }
 
   create() {
-    this.sprite = document.createElement("div");
+    if (!this.sprite) this.sprite = document.createElement("div");
 
     Object.assign(this.sprite.style, {
       backgroundImage: `url(${this.image})`,
       backgroundSize: "100% 100%",
       visibility: `${this.isVisible ? "visible" : "hidden"}`,
+      animation: "createSprite .80s",
     });
 
     this.content_blocks.appendChild(this.sprite);
   }
 
   destroy() {
-    this.sprite.style.visibility = "hidden";
+    Object.assign(this.sprite.style, {
+      transition: "transform .40s",
+      transform: "scale(0)",
+    });
+
     this.isDestroy = true;
   }
 
   checkBordertIntersect(ball) {
-    let isDestroy = true;
-
     let block_rect = this.sprite.getBoundingClientRect();
     let ball_rect = ball.sprite.getBoundingClientRect();
 
@@ -351,69 +466,90 @@ class Block {
       if (ball.directionY == -1) {
         ball.directionY = 1;
       } else {
-        isDestroy = false;
+        ball.directionX *= -1;
       }
     } else if (offsetTop < Math.min(offsetBottom, offsetLeft, offsetRight)) {
       if (ball.directionY == 1) {
         ball.directionY = -1;
       } else {
-        isDestroy = false;
+        ball.directionX *= -1;
       }
     } else if (offsetLeft < Math.min(offsetTop, offsetBottom, offsetRight)) {
       if (ball.directionX == 1) {
         ball.directionX = -1;
       } else {
-        isDestroy = false;
+        ball.directionY *= -1;
       }
     } else if (offsetRight < Math.min(offsetTop, offsetBottom, offsetLeft)) {
       if (ball.directionX == -1) {
         ball.directionX = 1;
       } else {
-        isDestroy = false;
+        ball.directionY *= -1;
       }
     }
-
-    return isDestroy;
   }
 }
 
-class Cronometer {
+class Timer {
   constructor() {
-    this.minutes = 0;
-    this.seconds = 0;
+    this.minutes = TIMER_MINUTES_DEFAULT;
+    this.seconds = TIMER_SECONDS_DEFAULT;
   }
 
   start() {
-    if (!this.interval_crono) {
-      this.interval_crono = setInterval(() => {
-        this.seconds++;
+    this.interval_timer = setInterval(() => {
+      this.seconds--;
 
-        if (this.seconds > 60) {
-          this.seconds = 0;
-          this.minutes++;
-        }
+      if (this.seconds < 0) {
+        this.seconds = 59;
+        this.minutes--;
+      }
 
+      //If time remaining is less than 00:30.
+      if (this.minutes === 0 && this.seconds <= 30) {
+        board_game.style.animation = "boardShadow 1s infinite";
+      } else {
+        board_game.style.animation = "";
+      }
+
+      if (this.minutes < 0) {
+        document.querySelector("#timer").innerText = "00:00";
+        board_game.style.animation = "";
+        
+        this.stop();
+
+        //Game over.
+      } else {
         document.querySelector("#timer").innerText = `${
           this.minutes < 10 ? `0${this.minutes}` : this.minutes
         }:${this.seconds < 10 ? `0${this.seconds}` : this.seconds}`;
-      }, 1000);
-    }
+      }
+    }, 1000);
   }
 
   stop() {
-    if (this.interval_crono) clearInterval(this.interval_crono);
+    if (this.interval_timer) clearInterval(this.interval_timer);
   }
 
-  reset() {
-    this.minutes = 0;
-    this.seconds = 0;
+  restart() {
+    this.minutes = TIMER_MINUTES_DEFAULT;
+    this.seconds = TIMER_SECONDS_DEFAULT;
   }
 }
 
 function initGame() {
   board_game = document.querySelector("#board-game");
 
-  if (!cronometer) cronometer = new Cronometer();
+  if (!timer) timer = new Timer();
+  else timer.restart();
+
+  let stats = document.querySelector("#stats");
+  stats.style.display = "block";
+
+  let board_introduction = document.querySelector("#board-introduction");
+  board_introduction.style.display = "none";
+
+  document.querySelector("#timer").innerText = "00:00";
 
   //Create ship.
   ship = new Ship(
@@ -441,61 +577,110 @@ function initGame() {
   ball.create();
 
   //Create content blocks.
-  createContentBlocks();
+  createContentBlocks(() => {
+    //When finish content blocks, then create content frase.
+    createContentFrase();
 
-  //Create content frase.
-  createContentFrase();
+    createCountDown(() => {
+      if (!timer.interval_timer) {
+        timer.start();
+      }
 
-  //Create controllers game.
-  //Code 39 =>
-  //Code 37 <=
-  //Code 32 Space bar
-  keyboardController(
-    {
-      37: function () {
-        if (ship != null) {
-          ship.directionX = -1;
-          ship.update();
-  
-          if (ball.speedX === 0 && ball.speedY === 0 && ship.isMove) {
-            ball.x -= SPEED_DEFAULT_SHIP;
-            ball.update();
-          }
-        } 
-      },
-      39: function () {
-        if (ship != null) {
-          ship.directionX = 1;
-          ship.update();
+      //Make visible the arrow direction shoot.
+      ship.arrow_direction_shoot.style.visibility = "visible";
 
-          if (ball.speedX === 0 && ball.speedY === 0 && ship.isMove) {
-            ball.x += SPEED_DEFAULT_SHIP;
-            ball.update();
-          }
-        }
-      },
-      32: function () {
-        if (ball != null) {
-          if (ball.speedX === 0 && ball.speedY === 0) {
-            cronometer.start();
+      //Create controllers game.
+      //Code 39 => Move left
+      //Code 37 <= Move right
+      //Code 38 Set direction shoot left
+      //Code 40 Set direciton shoot right
+      //Code 32 Space bar
+      keyboardController(
+        {
+          37: function () {
+            if (ship != null && ball != null) {
+              ship.directionX = -1;
+              ship.update();
 
-            ball.speedX = SPEED_DEFAULT_X_BALL + ball.plusSpeed;
-            ball.speedY = SPEED_DEFAULT_Y_BALL + ball.plusSpeed;
-
-            ball.interval_ball = setInterval(function () {
-              if (!isFinishGame()) {
+              if (ball.speedX === 0 && ball.speedY === 0 && ship.isMove) {
+                ball.x -= SPEED_DEFAULT_SHIP;
                 ball.update();
               }
-            }, ball.time_update);
-          }
-        }
-      },
-    },
-    TIME_REPEAT_CONTROLLER
-  );
+            }
+          },
+          38: function () {
+            if (ship != null && ball != null && ball.speedX === 0 && ball.speedY === 0) {
+              ship.setArrowDirection(-1);
+            }
+          },
+          39: function () {
+            if (ship != null && ball != null) {
+              ship.directionX = 1;
+              ship.update();
+
+              if (ball.speedX === 0 && ball.speedY === 0 && ship.isMove) {
+                ball.x += SPEED_DEFAULT_SHIP;
+                ball.update();
+              }
+            }
+          },
+          40: function () {
+            if (ship != null && ball != null && ball.speedX === 0 && ball.speedY === 0) {
+              ship.setArrowDirection(1);
+            }
+          },
+          32: function () {
+            if (ship != null && ball != null) {
+              if (ball.speedX === 0 && ball.speedY === 0) {
+
+                ship.arrow_direction_shoot.style.visibility = "hidden";
+
+                ball.directionX = ship.direction_shoot;
+
+                ball.speedX = SPEED_DEFAULT_X_BALL;
+                ball.speedY = SPEED_DEFAULT_Y_BALL;
+
+                ball.interval_ball = setInterval(function () {
+                  if (!isFinishGame()) {
+                    ball.update();
+                  }
+                }, ball.time_update);
+              }
+            }
+          },
+        },
+        TIME_REPEAT_CONTROLLER
+      );
+    });
+  });
 }
 
-function createContentBlocks() {
+function createCountDown(callback) {
+  let contentCountDown = document.createElement("div");
+  contentCountDown.classList.add("countdown");
+  contentCountDown.innerText = "1";
+
+  board_game.appendChild(contentCountDown);
+
+  let countdown = setInterval(function () {
+    let text = Number.parseInt(contentCountDown.innerText) - 1;
+
+    contentCountDown.innerText = "";
+
+    if (text !== 0 && !isNaN(text)) {
+      contentCountDown.innerText = text;
+    } else if (text === 0 && !isNaN(text)) {
+      text = "GO!";
+      contentCountDown.innerText = text;
+    } else {
+      clearInterval(countdown);
+    }
+  }, 0);
+
+  setTimeout(callback, 0);
+}
+
+function createContentBlocks(callback) {
   contentBlocks = document.createElement("div");
 
   let width_content = BLOCK_WIDTH * COUNT_COLS_BLOCKS;
@@ -557,6 +742,8 @@ function createContentBlocks() {
       }
     }
   }
+
+  setTimeout(callback, 1500);
 }
 
 function createContentFrase() {
@@ -588,7 +775,7 @@ function createContentFrase() {
       fontSize: "25px",
       textAlign: "center",
       paddingTop: "6px",
-      letterSpacing: "5px"
+      letterSpacing: "5px",
     });
 
     divFrase.innerText = frase["name"];
@@ -677,19 +864,22 @@ function intersect(element1, element2) {
 function isFinishGame() {
   let isFinish = false;
   //If the length of array blocks destroyed is equal than array blocks.
-  if (Object.values(ARRAY_BLOCKS_DESTROYED).length === Object.values(ARRAY_BLOCKS_DESTROYABLE).length) {
+  if (
+    Object.values(ARRAY_BLOCKS_DESTROYED).length ===
+    Object.values(ARRAY_BLOCKS_DESTROYABLE).length
+  ) {
     //Finish game.
-    cronometer.stop();
-    
-    clearInterval(cronometer.interval_crono);
+    timer.stop();
+
+    clearInterval(timer.interval_timer);
     clearInterval(ball.interval_ball);
 
     board_game.removeChild(ship.sprite);
     board_game.removeChild(ball.sprite);
     board_game.removeChild(contentBlocks);
 
-    let total_minutes = cronometer.minutes + ship.plusTimeMinutes;
-    let total_seconds = cronometer.minutes + ship.plusTimeSeconds;
+    let total_minutes = TIMER_MINUTES_DEFAULT - timer.minutes;
+    let total_seconds = TIMER_SECONDS_DEFAULT + timer.seconds;
 
     //Send the score to backend.
     sendScore(total_minutes, total_seconds);
@@ -699,11 +889,6 @@ function isFinishGame() {
 
     ship = null;
     ball = null;
-
-    document.querySelector("#timer").innerText = "00:00";
-    document.querySelector("#timer-plus").innerText = "00:00";
-
-    cronometer.reset();
 
     isFinish = true;
   }
@@ -717,8 +902,10 @@ function isFinishGame() {
  * @param {Number} total_seconds The total seconds of player.
  */
 function sendScore(total_minutes, total_seconds) {
-    //If the length of array blocks destroyed is equal than array blocks.
-    if (Object.values(ARRAY_BLOCKS_DESTROYED).length === Object.values(ARRAY_BLOCKS_DESTROYABLE).length) {
-      
-    }
+  //If the length of array blocks destroyed is equal than array blocks.
+  if (
+    Object.values(ARRAY_BLOCKS_DESTROYED).length ===
+    Object.values(ARRAY_BLOCKS_DESTROYABLE).length
+  ) {
+  }
 }

@@ -4,42 +4,30 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="assets/img/ball.png" type="image/png">    
+    <link rel="icon" href="assets/img/ball.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
     <link rel="stylesheet" href="assets/css/normalize.css"/>
     <link rel="stylesheet" href="assets/css/style.css"/>
     <title>Arkanoid</title>
 </head>
 <body>
     <div class="content">
-        <div class="mute">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-                <g fill="#FFF">
-                    <polygon points="14.025,38.004 14.025,61.993 31.548,61.993 55.537,85.982 55.537,14.018 31.552,38.004"></polygon>
-                    <path d="M67.41,34.095l-4.243,4.239c6.43,6.432,6.43,16.896,0,23.324L67.41,65.9C76.179,57.129,76.179,42.864,67.41,34.095z"></path>
-                    <path d="M75.89,25.616l-4.241,4.239c11.105,11.105,11.105,29.176,0,40.284l4.241,4.241C89.337,60.934,89.337,39.06,75.89,25.616z"></path>
-                </g>
-            </svg>
-        </div>
-
         <div class="game">
-            <div class="stats">
+            <div id="stats" class="stats">
                 <table>
                     <tr>
                         <td class="timer">
-                            Tiempo: <span id="timer">00:00</span>
-                        </td>
-                        <td class="plus">
-                            <span id="timer-plus">+00:00</span>
+                            <i class="fas fa-stopwatch"></i> <span id="timer">00:00</span>
                         </td>
                     </tr>
                 </table>
             </div>
             <div id="board" class="board">
                 <div id="board-introduction" class="board-introduction">
-                    
+                    <img src="assets/img/arkanoid.png" height="50"/>
+                    <button>></button>
                 </div>
-                <div id="board-game">
-
+                <div id="board-game" class="board-game">
                 </div>
             </div>
         </div>

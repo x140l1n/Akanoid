@@ -12,5 +12,8 @@ function init() {
     board.style.width = `${BOARD_WIDTH}px`;
     board.style.height = `${BOARD_HEIGHT}px`;
 
-    initGame();
+    let stats = document.querySelector("#stats");
+    stats.style.display = "none";
+
+     initGame();
 }
