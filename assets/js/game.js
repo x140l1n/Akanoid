@@ -42,7 +42,7 @@ const ARRAY_TYPES_ITEMS = {
   },
 };
 
-const SPEED_DEFAULT_ITEM = 1;
+const SPEED_DEFAULT_ITEM = 3    ;
 const TIME_UPDATE_ITEM = 1000 / 60; //In milliseconds (ms).
 
 const BALL_WIDTH_HEIGHT = 15;
@@ -551,9 +551,8 @@ class Timer {
         //Game over.
         GameOver();
       } else {
-        document.querySelector("#timer").innerText = `${
-          this.minutes < 10 ? `0${this.minutes}` : this.minutes
-        }:${this.seconds < 10 ? `0${this.seconds}` : this.seconds}`;
+        document.querySelector("#timer").innerText = `${this.minutes < 10 ? `0${this.minutes}` : this.minutes
+          }:${this.seconds < 10 ? `0${this.seconds}` : this.seconds}`;
       }
     }, 1000);
   }
@@ -583,9 +582,8 @@ class Timer {
     if (timer.minutes < 0) {
       document.querySelector("#timer").innerText = "00:00";
     } else {
-      document.querySelector("#timer").innerText = `${
-        timer.minutes < 10 ? `0${timer.minutes}` : timer.minutes
-      }:${timer.seconds < 10 ? `0${timer.seconds}` : timer.seconds}`;
+      document.querySelector("#timer").innerText = `${timer.minutes < 10 ? `0${timer.minutes}` : timer.minutes
+        }:${timer.seconds < 10 ? `0${timer.seconds}` : timer.seconds}`;
     }
   }
 
@@ -603,9 +601,8 @@ class Timer {
     if (timer.minutes < 0) {
       document.querySelector("#timer").innerText = "00:00";
     } else {
-      document.querySelector("#timer").innerText = `${
-        timer.minutes < 10 ? `0${timer.minutes}` : timer.minutes
-      }:${timer.seconds < 10 ? `0${timer.seconds}` : timer.seconds}`;
+      document.querySelector("#timer").innerText = `${timer.minutes < 10 ? `0${timer.minutes}` : timer.minutes
+        }:${timer.seconds < 10 ? `0${timer.seconds}` : timer.seconds}`;
     }
   }
 }
@@ -678,11 +675,11 @@ class Item {
 }
 
 function initGame() {
-  if (!timer) timer = new Timer();
-  else timer.restart();
-
   let stats = document.querySelector("#stats");
   stats.style.display = "block";
+
+  if (!timer) timer = new Timer();
+  else timer.restart();
 
   document.querySelector("#timer").innerText = "00:00";
 

@@ -27,14 +27,21 @@ body {
   overflow: hidden;
 }
 
-/***** GAME & BOARD & STATS *****/
+/***** GAME & BOARD *****/
+.board {
+  background-image: url("../img/background.png");
+  border: solid transparent;
+  -o-border-image: url("../img/border.png") 25% round;
+  border-image: url("../img/border.png") 25% round;
+  overflow: hidden;
+}
+
 .game {
   position: absolute;
   left: 50%;
   top: 50%;
   margin-left: -400px;
   margin-top: -335px;
-  text-transform: uppercase;
   -webkit-font-smoothing: antialiased;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -42,80 +49,6 @@ body {
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-}
-
-.board-menu {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: white;
-}
-
-.board-menu .logo {
-  display: flex;
-  margin: auto;
-  font-size: 60px;
-}
-
-.board-menu .logo > * {
-  position: relative;
-}
-
-.board-menu .logo .logo-2 img {
-  width: 60px;
-  margin-bottom: 20px;
-}
-
-.board-menu .logo .logo-1 {
-  animation: logo1 0.5s ease-in;
-}
-
-.board-menu .logo .logo-2 {
-  top: -200px;
-  animation: logo2 2s ease-in-out;
-  animation-fill-mode: forwards;
-  animation-delay: 2s;
-}
-
-.board-menu .logo .logo-3 {
-  animation: logo3 0.5s ease-in;
-}
-
-.board-menu .menu-options {
-  display: flex;
-  flex-direction: column;
-  margin: auto;
-}
-
-.board-menu .menu-options button {
-  font-size: 16px;
-  margin: 10px;
-  padding: 10px;
-  width: 400px;
-  background-repeat: no-repeat;
-  background-position: 25px 5px;
-  padding-left: 40px;
-  background-size: 32px;
-  left: -600px;
-  animation: slideButton 1s ease-out;
-  animation-fill-mode: forwards;
-}
-
-.board-menu .menu-options button.play {
-  background-image: url("../img/play.png");
-  animation-delay: 0.5s;
-}
-
-.board-menu .menu-options button.instructions {
-  background-image: url("../img/question.png");
-  animation-delay: 1s;
-}
-
-.board-menu .menu-options button.ranking {
-  background-image: url("../img/trophy.png");
-  animation-delay: 1.5s;
 }
 
 .board-game {
@@ -169,20 +102,131 @@ body {
     transform: scale(0.3);
   }
 }
+/***** End GAME & BOARD *****/
 
-.board {
-  background-image: url("../img/background.png");
-  border: solid transparent;
-  -o-border-image: url("../img/border.png") 25% round;
-  border-image: url("../img/border.png") 25% round;
-  overflow: hidden;
+/***** MENU *****/
+.board-menu {
+  width: 100%;
+  height: 100%;
+  color: white;
 }
 
+.board-menu .menu {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+
+.board-menu .menu:not(.main) {
+  display: none;
+}
+
+.board-menu .menu .menu-header {
+  display: flex;
+  padding: 50px;
+}
+
+.board-menu .menu .menu-header .title {
+  width: 100%;
+  text-align: center;
+  line-height: 60px;
+  font-size: 26px;
+}
+
+.board-menu .menu-header .go-back {
+  font-size: 16px;
+  background-repeat: no-repeat;
+  background-position: 0px;
+  padding-left: 40px;
+  background-size: 32px;
+  background-image: url("../img/go_back.png");
+}
+
+.board-menu .menu.main .logo {
+  display: flex;
+  margin: 50px auto;
+  font-size: 60px;
+}
+
+.board-menu .menu.main .logo > * {
+  position: relative;
+}
+
+.board-menu .menu.main .logo .logo-2 img {
+  width: 60px;
+  margin-bottom: 20px;
+}
+
+.board-menu .menu.main .logo .logo-1 {
+  transition: left 1s ease-in-out;
+  left: -600px;
+}
+
+.board-menu .menu.main .logo .logo-2 {
+  transition: top 1s ease-in-out;
+  top: -600px;
+}
+
+.board-menu .menu.main .logo .logo-3 {
+  transition: right 1s ease-in-out;
+  right: -600px;
+}
+
+.board-menu .menu.main .menu-options {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+}
+
+.board-menu .menu.main .menu-footer {
+  margin: auto;
+  text-align: center;
+}
+
+.board-menu .menu.main .menu-footer p {
+  position: relative;
+  transition: left 1s ease-in-out;
+  transition-delay: 2.5s;
+  left: -700px;
+}
+
+.board-menu .menu.main .menu-options button {
+  font-size: 16px;
+  margin: 10px;
+  padding: 10px;
+  width: 400px;
+  background-repeat: no-repeat;
+  background-position: 25px 5px;
+  padding-left: 40px;
+  background-size: 32px;
+  transition: left 1s ease-in-out;
+  left: -600px;
+}
+
+.board-menu .menu.main .menu-options button.play {
+  background-image: url("../img/play.png");
+  transition-delay: 1s;
+}
+
+.board-menu .menu.main .menu-options button.instructions {
+  background-image: url("../img/question.png");
+  transition-delay: 1.5s;
+}
+
+.board-menu .menu.main .menu-options button.ranking {
+  background-image: url("../img/trophy.png");
+  transition-delay: 2s;
+}
+/***** End MENU *****/
+
+/***** STATS *****/
 .stats {
   position: absolute;
   top: -55px;
   width: 100%;
   color: white;
+  display: none;
   font-size: 21px;
 }
 
@@ -220,18 +264,7 @@ body {
 .stats table .lifes .img-lifes img {
   margin: 5px;
 }
-
-#ship:before {
-  position: absolute;
-  visibility: visible !important;
-  top: -40px;
-  right: -35px;
-  content: attr(data-before);
-  font-size: 20px;
-  color: white;
-}
-
-/***** End GAME & BOARD & STATS *****/
+/***** End STATS *****/
 
 /***** KEYFRAMES *****/
 @keyframes createSprite {
@@ -249,7 +282,7 @@ body {
   }
 }
 
-@keyframes slideButton {
+@keyframes slideElementFromLeft {
   0% {
     left: -600px;
   }
@@ -286,6 +319,7 @@ body {
 
 
 }
+
 @keyframes logo3 {
   0% {
     right: -600px;
@@ -295,3 +329,13 @@ body {
   }
 }
 /***** End KEYFRAMES *****/
+
+#ship:before {
+  position: absolute;
+  visibility: visible !important;
+  top: -40px;
+  right: -55px;
+  content: attr(data-before);
+  font-size: 16px;
+  color: white;
+}
