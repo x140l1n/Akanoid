@@ -15,5 +15,5 @@ function init() {
     let stats = document.querySelector("#stats");
     stats.style.display = "none";
 
-     initGame();
+    //initGame();
 }

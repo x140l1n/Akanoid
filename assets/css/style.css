@@ -1,19 +1,17 @@
-/*
-* Prefixed by https://autoprefixer.github.io
-* PostCSS: v8.3.6,
-* Autoprefixer: v10.3.1
-* Browsers: last 4 version
-*/
-
 @font-face {
-  font-family: "PixelGameFont";
-  src: url("../fonts/PixelGameFont.ttf");
+  font-family: "Press Start 2P";
+  src: url("../fonts/PressStart2P-Regular.ttf");
 }
 
 * {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  font-family: "PixelGameFont";
+  font-family: "Press Start 2P";
+  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAzElEQVRYR+2X0Q6AIAhF5f8/2jYXZkwEjNSVvVUjDpcrGgT7FUkI2D9xRfQETwNIiWO85wfINfQUEyxBG2ArsLwC0jioGt5zFcwF4OYDPi/mBYKm4t0U8ATgRm3ThFoAqkhNgWkA0jJLvaOVSs7j3qMnSgXWBMiWPXe94QqMBMBc1VZIvaTu5u5pQewq0EqNZvIEMCmxAawK0DNkay9QmfFNAJUXfgGgUkLaE7j/h8fnASkxHTz0DGIBMCnBeeM7AArpUd3mz2x3C7wADglA8BcWMZhZAAAAAElFTkSuQmCC")
+      14 0,
+    pointer;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
 }
 
 body {
@@ -46,7 +44,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.board-introduction {
+.board-menu {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -55,12 +53,69 @@ body {
   color: white;
 }
 
-.board-introduction > img {
+.board-menu .logo {
+  display: flex;
+  margin: auto;
+  font-size: 60px;
+}
+
+.board-menu .logo > * {
+  position: relative;
+}
+
+.board-menu .logo .logo-2 img {
+  width: 60px;
+  margin-bottom: 20px;
+}
+
+.board-menu .logo .logo-1 {
+  animation: logo1 0.5s ease-in;
+}
+
+.board-menu .logo .logo-2 {
+  top: -200px;
+  animation: logo2 2s ease-in-out;
+  animation-fill-mode: forwards;
+  animation-delay: 2s;
+}
+
+.board-menu .logo .logo-3 {
+  animation: logo3 0.5s ease-in;
+}
+
+.board-menu .menu-options {
+  display: flex;
+  flex-direction: column;
   margin: auto;
 }
 
-.board-introduction > button {
-  margin: auto;
+.board-menu .menu-options button {
+  font-size: 16px;
+  margin: 10px;
+  padding: 10px;
+  width: 400px;
+  background-repeat: no-repeat;
+  background-position: 25px 5px;
+  padding-left: 40px;
+  background-size: 32px;
+  left: -600px;
+  animation: slideButton 1s ease-out;
+  animation-fill-mode: forwards;
+}
+
+.board-menu .menu-options button.play {
+  background-image: url("../img/play.png");
+  animation-delay: 0.5s;
+}
+
+.board-menu .menu-options button.instructions {
+  background-image: url("../img/question.png");
+  animation-delay: 1s;
+}
+
+.board-menu .menu-options button.ranking {
+  background-image: url("../img/trophy.png");
+  animation-delay: 1.5s;
 }
 
 .board-game {
@@ -116,10 +171,11 @@ body {
 }
 
 .board {
-  background-image: url("../img/bg.png");
+  background-image: url("../img/background.png");
   border: solid transparent;
   -o-border-image: url("../img/border.png") 25% round;
   border-image: url("../img/border.png") 25% round;
+  overflow: hidden;
 }
 
 .stats {
@@ -127,10 +183,10 @@ body {
   top: -55px;
   width: 100%;
   color: white;
-  font-size: 26px;
+  font-size: 21px;
 }
 
-.stats i{
+.stats i {
   font-size: 36px;
 }
 
@@ -138,8 +194,19 @@ body {
   width: 100%;
 }
 
+.stats table .img-timer {
+  width: 5%;
+  margin-right: 10px;
+}
+
+.stats table .img-timer img{
+  width: 40px;
+  margin: 10px;
+  margin-bottom: 15px;
+}
+
 .stats table .timer {
-  width: 50%;
+  width: 95%;
   text-align: left;
 }
 
@@ -160,10 +227,13 @@ body {
   top: -40px;
   right: -35px;
   content: attr(data-before);
+  font-size: 20px;
   color: white;
 }
+
 /***** End GAME & BOARD & STATS *****/
 
+/***** KEYFRAMES *****/
 @keyframes createSprite {
   from {
     transform: scale(0);
@@ -175,10 +245,53 @@ body {
 
 @keyframes boardShadow {
   50% {
-    box-shadow: inset 0px 0px 20px 10px #FF0000;
+    box-shadow: inset 0px 0px 20px 10px #ff0000;
   }
 }
 
-/***** PIXEL BUTTON *****/
+@keyframes slideButton {
+  0% {
+    left: -600px;
+  }
+  80% {
+    left: 20px;
+  }
+  100% {
+    left: 0px;
+  }
+}
 
-/***** End PIXEL BUTTON *****/
+@keyframes logo1 {
+  0% {
+    left: -600px;
+  }
+  100% {
+    left: 0px;
+  }
+}
+
+@keyframes logo2 {
+  0% {
+    top: -200px;
+  }
+  50% {
+    top: 0px;
+  }
+  75% {
+    top: -50px;
+  }
+  100% {
+    top: 0px;
+  }
+
+
+}
+@keyframes logo3 {
+  0% {
+    right: -600px;
+  }
+  100% {
+    right: 0px;
+  }
+}
+/***** End KEYFRAMES *****/

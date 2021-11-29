@@ -1,31 +1,54 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="assets/img/ball.png" type="image/png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
-    <link rel="stylesheet" href="assets/css/normalize.css"/>
-    <link rel="stylesheet" href="assets/css/style.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="assets/css/normalize.css" />
+    <link rel="stylesheet" href="assets/css/nes.min.css" />
+    <link rel="stylesheet" href="assets/css/style.css" />
     <title>Arkanoid</title>
 </head>
+
 <body>
     <div class="content">
         <div class="game">
             <div id="stats" class="stats">
                 <table>
                     <tr>
+                        <td class="img-timer"><img src="assets/img/timer.png" /> </td>
                         <td class="timer">
-                            <i class="fas fa-stopwatch"></i> <span id="timer">00:00</span>
+                            <span id="timer">00:00</span>
                         </td>
                     </tr>
                 </table>
             </div>
             <div id="board" class="board">
-                <div id="board-introduction" class="board-introduction">
-                    <img src="assets/img/arkanoid.png" height="50"/>
-                    <button>></button>
+                <div id="board-menu" class="board-menu">
+                    <div class="logo">
+                        <div class="logo-1">
+                            ARKAN
+                        </div>
+                        <div class="logo-2">
+                            <img src="assets/img/ball.png"/>
+                        </div>
+                        <div class="logo-3">
+                            ID
+                        </div>
+                    </div>
+                    <div id="menu-options" class="menu-options">
+                        <button type="button" class="nes-btn is-success play" data-action="play">Jugar</button>
+                        <button type="button" class="nes-btn is-primary instructions"
+                            data-action="play">Instruccions</button>
+                        <button type="button" class="nes-btn is-warning ranking" data-action="play">Ranking</button>
+                    </div>
+                    <div class="menu-footer">
+                    </div>
                 </div>
                 <div id="board-game" class="board-game">
                 </div>
@@ -35,4 +58,5 @@
     <script type="text/javascript" src="assets/js/index.js"></script>
     <script type="text/javascript" src="assets/js/game.js"></script>
 </body>
+
 </html>
