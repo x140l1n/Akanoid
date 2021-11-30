@@ -115,6 +115,7 @@ body {
   display: flex;
   width: 100%;
   height: 100%;
+  padding: 50px;
   flex-direction: column;
 }
 
@@ -124,7 +125,6 @@ body {
 
 .board-menu .menu .menu-header {
   display: flex;
-  padding: 50px;
 }
 
 .board-menu .menu .menu-header .title {
@@ -217,6 +217,40 @@ body {
 .board-menu .menu.main .menu-options button.ranking {
   background-image: url("../img/trophy.png");
   transition-delay: 2s;
+}
+
+.board-menu .menu .wrap-table-ranking {
+  margin-top: 50px;
+  background-color: #212529;
+  border: 5px white solid;
+  padding: 20px;
+  height: 100%;
+  overflow-y: scroll;
+  border-style: dotted;
+}
+
+.board-menu .menu .wrap-table-ranking .table-ranking {
+  width: 100%;
+  font-size: 14px;
+}
+
+.board-menu .menu .wrap-table-ranking .table-ranking tr {
+  height: 20px;
+  text-align: center;
+}
+
+.board-menu .menu .wrap-table-ranking .table-ranking tfoot {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+}
+
+.board-menu .menu .wrap-table-ranking .table-ranking tr:not(:last-child) {
+  border-bottom: 2px white dashed;
+}
+
+.board-menu .menu .wrap-table-ranking .table-ranking td {
+  padding: 20px;
 }
 /***** End MENU *****/
 
@@ -329,6 +363,28 @@ body {
   }
 }
 /***** End KEYFRAMES *****/
+
+/***** SCROLLBAR *****/
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+/***** End SCROLLBAR *****/
 
 #ship:before {
   position: absolute;
