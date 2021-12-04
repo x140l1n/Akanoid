@@ -37,11 +37,11 @@ function get()
         if ($id_game !== -1 && $id_user !== -1) {
             $db = new Database();
 
-            $statement = $db->connect()->prepare("SELECT u.id, u.nickname, DATE_FORMAT(ugc.time, \"%H:%i\") as time
+            $statement = $db->connect()->prepare("SELECT u.id, u.nickname, ugc.points, IFNULL(ugc.hits, 0) as win
                                                   FROM user_game_cycle ugc
                                                   INNER JOIN user u ON u.id = ugc.id_user
                                                   WHERE ugc.id_game = :id_game
-                                                  ORDER BY ugc.time ASC
+                                                  ORDER BY  ugc.hits DESC, ugc.points DESC
                                                   LIMIT :top");
 
             $statement->bindParam(":id_game", $id_game);
@@ -57,12 +57,12 @@ function get()
                     $inTop = true;
                 }
 
-                array_push($ranking, array("id" => $row["id"], "nickname" => $row["nickname"], "time" => $row["time"]));
+                array_push($ranking, array("id" => $row["id"], "nickname" => $row["nickname"], "points" => $row["points"], "win" => $row["win"]));
             }
 
             //If the user is not in the top 10.
             if (!$inTop) {
-                $statement = $db->connect()->prepare("SELECT u.id, u.nickname, DATE_FORMAT(ugc.time, \"%H:%i\") as time
+                $statement = $db->connect()->prepare("SELECT u.id, u.nickname, ugc.points, IFNULL(ugc.hits, 0) as win
                                                       FROM user_game_cycle ugc
                                                       INNER JOIN user u ON u.id = ugc.id_user
                                                       WHERE ugc.id_game = :id_game AND ugc.id_user = :id_user

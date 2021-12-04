@@ -134,13 +134,35 @@ body {
   font-size: 26px;
 }
 
-.board-menu .menu-header .go-back {
+.board-menu .go-next {
   font-size: 16px;
   background-repeat: no-repeat;
-  background-position: 0px;
+  background-position: right;
+  padding-right: 40px;
+  background-size: 20px;
+  background-image: url("../img/go_next.png");
+}
+
+.board-menu .go-back {
+  font-size: 16px;
+  background-repeat: no-repeat;
+  background-position: left;
   padding-left: 40px;
-  background-size: 32px;
+  background-size: 20px;
   background-image: url("../img/go_back.png");
+}
+
+.board-menu .instructions-footer .go-back.btn-page {
+  float: left;
+}
+
+.board-menu .instructions-footer .go-next.btn-page {
+  float: right; 
+}
+
+.board-menu div[name="page"] {
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .board-menu .menu.main .logo {
@@ -252,6 +274,11 @@ body {
 .board-menu .menu .wrap-table-ranking .table-ranking td {
   padding: 20px;
 }
+
+.board-menu .menu .content-instructions {
+  padding: 20px;
+  flex-grow: 1;
+}
 /***** End MENU *****/
 
 /***** STATS *****/
@@ -284,19 +311,13 @@ body {
 }
 
 .stats table .timer {
-  width: 95%;
+  width: 50%;
   text-align: left;
 }
 
-.stats table .lifes .img-lifes {
-  display: -webkit-inline-box;
-  display: -ms-inline-flexbox;
-  display: inline-flex;
-  vertical-align: middle;
-}
-
-.stats table .lifes .img-lifes img {
-  margin: 5px;
+.stats table .points {
+  width: 50%;
+  text-align: right;
 }
 /***** End STATS *****/
 

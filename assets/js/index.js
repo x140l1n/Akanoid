@@ -1,8 +1,20 @@
+document.addEventListener("DOMContentLoaded", init);
+
 const BOARD_WIDTH = 800;
 const BOARD_HEIGHT = 700;
 const BORDER_WIDTH = 20;
 
-document.addEventListener("DOMContentLoaded", init);
+const RANKING_MENU = document.querySelector("#ranking-menu");
+const TABLE_RANKING = RANKING_MENU.querySelector("#table-ranking");
+
+const MAIN_MENU = document.querySelector("#main-menu");
+
+const INSTRUCCIONS_MENU = document.querySelector("#instructions-menu");
+const CONTENT_INSTRUCTIONS = INSTRUCCIONS_MENU.querySelector("#content-instructions");
+const ARRAY_PAGES = CONTENT_INSTRUCTIONS.querySelectorAll("div[name='page']");
+
+let controller = null;
+let signal = null;
 
 function init() {
     let board = document.querySelector("#board");
@@ -14,8 +26,6 @@ function init() {
 
     start_transitions();
 
-    let main_menu = document.querySelector("#main-menu");
-
     board_menu = document.querySelector("#board-menu");
     board_menu.addEventListener("click", (e) => {
         let action = e.target.dataset.action;
@@ -24,76 +34,158 @@ function init() {
             case "play":
                 board_menu.style.display = "none";
 
-                setTimeout(initGame, 1000);
+                setTimeout(init_game, 1000);
 
                 break;
             case "instructions":
-                main_menu.style.display = "none";
+                MAIN_MENU.style.display = "none";
 
-                let instructions_menu = document.querySelector("#instructions-menu");
-                instructions_menu.style.display = "flex";
+                INSTRUCCIONS_MENU.style.display = "flex";
 
+                var content_instructions = CONTENT_INSTRUCTIONS;
+                var current_page = Number.parseInt(content_instructions.dataset.currentPage);
+
+                render_page_button(current_page);
+                
                 break;
             case "ranking":
-                main_menu.style.display = "none";
+                controller = new AbortController(); //Abort one or more request.
+                signal = controller.signal;
 
-                let ranking_menu = document.querySelector("#ranking-menu");
-                ranking_menu.style.display = "flex";
+                MAIN_MENU.style.display = "none";
 
-                get_ranking();
+                RANKING_MENU.style.display = "flex";
+
+                get_ranking(signal);
 
                 break;
-
             case "go-back":
                 //Display none all menus except main menu.
                 [].slice.call(board_menu.children).forEach((element) => {
-                    if (element !== main_menu) {
+                    if (element !== MAIN_MENU) {
                         element.style.display = "none";
                     } else {
                         element.style.display = "flex";
                     }
                 });
 
+                if (controller != null) 
+                {
+                    controller.abort(); //Abort the request ranking.
+                    controller = null;
+                }
+
+                break;
+            case "go-back-page":
+                var content_instructions = CONTENT_INSTRUCTIONS;
+                var current_page = Number.parseInt(content_instructions.dataset.currentPage);
+                
+                current_page--;
+
+                if (current_page <= ARRAY_PAGES.length && current_page > 0) {    
+                    content_instructions.dataset.currentPage = current_page.toString();
+
+                    render_page_button(current_page);
+                }
+                
+                break;
+            case "go-next-page":
+                var content_instructions = CONTENT_INSTRUCTIONS;
+                var current_page = Number.parseInt(content_instructions.dataset.currentPage);
+
+                current_page++;
+
+                if (current_page <= ARRAY_PAGES.length && current_page > 0) {
+                    content_instructions.dataset.currentPage = current_page.toString();
+
+                    render_page_button(current_page);
+                }
+
                 break;
         }
     });
 
-    //initGame();
+    //board_menu.style.display = "none";
+
+    //init_game();
 }
 
 function start_transitions() {
-    let menu_options = document.querySelector("#menu-options");
+    let menu_options = MAIN_MENU.querySelector("#menu-options");
     [].slice
         .call(menu_options.children)
         .forEach((element) => (element.style.left = 0));
 
-    let logo = document.querySelector("#logo");
+    let logo = MAIN_MENU.querySelector("#logo");
     logo = [].slice.call(logo.children);
     logo[0].style.left = 0;
     logo[1].style.top = 0;
     logo[2].style.right = 0;
 
-    let menu_footer = document.querySelector("#menu-footer");
+    let menu_footer = MAIN_MENU.querySelector("#menu-footer");
     menu_footer.firstElementChild.style.left = 0;
 }
 
-function get_ranking() {
+function render_page_button(num_page) {
+    ARRAY_PAGES.forEach((page) => {
+        if (page.dataset.page === num_page.toString()) {
+            page.style.display = "block";
+        } else {
+            page.style.display = "none";
+        }
+    });
+
+    let current_page_element = INSTRUCCIONS_MENU.querySelector(`div[data-page='${num_page}']`);
+
+    let go_back_page_element = INSTRUCCIONS_MENU.querySelector("button[data-action='go-back-page']");
+    let go_next_page_element = INSTRUCCIONS_MENU.querySelector("button[data-action='go-next-page']");
+
+    if (current_page_element.previousElementSibling !== null) {
+        let previous_page_name = current_page_element.previousElementSibling.dataset.pageName;
+        go_back_page_element.innerText = previous_page_name;
+    } else {
+        go_back_page_element.innerText = "";
+    }
+    
+    if (current_page_element.nextElementSibling !== null) {
+        let next_page_name = current_page_element.nextElementSibling.dataset.pageName;
+        go_next_page_element.innerText = next_page_name;
+    } else {
+        go_next_page_element.innerText = "";
+    }
+
+    go_back_page_element.style.display = "block";
+    go_back_page_element.style.display = "block";
+
+    go_next_page_element.style.display = "block";
+    go_next_page_element.style.display = "block";
+    
+    if (num_page === 1) {
+        go_back_page_element.style.display = "none";
+    } else if (num_page === ARRAY_PAGES.length) {
+        go_next_page_element.style.display = "none";
+    }
+}
+
+function get_ranking(signal) {
     let data = new FormData();
     data.append("action", "get");
     data.append("id_game", 1);
     data.append("top", 10);
     data.append("id_user", 1);
 
-    let table_ranking = document.querySelector("#table-ranking");
-    table_ranking.style.height = "100%";
-    let body = table_ranking.tBodies[0];
-    let footer = table_ranking.tFoot;
+    TABLE_RANKING.style.height = "100%";
+
+    let body = TABLE_RANKING.tBodies[0];
+
+    let footer = TABLE_RANKING.tFoot;
+
     body.innerHTML = "";
     footer.innerHTML = "";
 
     let row_wait = document.createElement("tr");
     let cell_wait = document.createElement("td");
-    cell_wait.innerText = "Espere...";
+    cell_wait.innerText = "Un moment...";
     row_wait.appendChild(cell_wait);
     body.appendChild(row_wait);
 
@@ -101,17 +193,18 @@ function get_ranking() {
         method: "POST",
         cache: "no-cache",
         body: data,
+        signal: signal
     })
     .then(response => response.json())
     .then(data => {
-        table_ranking.style.height = "";
+        TABLE_RANKING.style.height = "";
 
-        create_ranking(body, footer, data, 1);
+        render_ranking(body, footer, data, 1);
     })
     .catch(error => console.error(error));
 }
 
-function create_ranking(body, footer, data, id_user) {
+function render_ranking(body, footer, data, id_user) {
     body.innerHTML = "";
 
     if (data.data.length > 0) {
@@ -120,7 +213,8 @@ function create_ranking(body, footer, data, id_user) {
         data.data.forEach((item, index) => {
             let position = index + 1;
             let nickname = Number.parseInt(item.id) === id_user ? "Tu": item.nickname;
-            let time = item.time;
+            let points = item.points;
+            let win = item.win;
 
             let row = document.createElement("tr");
 
@@ -144,13 +238,16 @@ function create_ranking(body, footer, data, id_user) {
             let cell_nickname = document.createElement("td");
             cell_nickname.innerText = nickname;
 
-            let cell_time = document.createElement("td");
+            let cell_points = document.createElement("td");
+            cell_points.innerText = `${points}p`;
 
-            cell_time.innerText = time;
+            let cell_win = document.createElement("td");
+            cell_win.innerText = win === 1 ? "Guanyat" : "Perdut";
 
             row.appendChild(cell_position);
             row.appendChild(cell_nickname);
-            row.appendChild(cell_time);
+            row.appendChild(cell_points);
+            row.appendChild(cell_win);
 
             body.appendChild(row);
         });
@@ -166,14 +263,17 @@ function create_ranking(body, footer, data, id_user) {
             let cell_nickname = document.createElement("td");
             cell_nickname.innerText = "Tu";
 
-            let cell_time = document.createElement("td");
-
-            cell_time.innerText = data.data_user.time;
+            let cell_points = document.createElement("td");
+            cell_points.innerText = `${data.data_user.points}p`;
+            
+            let cell_win = document.createElement("td");
+            cell_win.innerText = data.data_user.win === 1 ? "Guanyat" : "Perdut";
 
             row.appendChild(cell_position);
             row.appendChild(cell_nickname);
-            row.appendChild(cell_time);
-            
+            row.appendChild(cell_points);
+            row.appendChild(cell_win);
+
             footer.appendChild(row);
         }
     }
