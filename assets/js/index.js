@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", init_menu);
 
 const BOARD_WIDTH = 800;
 const BOARD_HEIGHT = 700;
@@ -10,13 +10,15 @@ const TABLE_RANKING = RANKING_MENU.querySelector("#table-ranking");
 const MAIN_MENU = document.querySelector("#main-menu");
 
 const INSTRUCCIONS_MENU = document.querySelector("#instructions-menu");
-const CONTENT_INSTRUCTIONS = INSTRUCCIONS_MENU.querySelector("#content-instructions");
+const CONTENT_INSTRUCTIONS = INSTRUCCIONS_MENU.querySelector(
+    "#content-instructions"
+);
 const ARRAY_PAGES = CONTENT_INSTRUCTIONS.querySelectorAll("div[name='page']");
 
 let controller = null;
 let signal = null;
 
-function init() {
+function init_menu() {
     let board = document.querySelector("#board");
 
     //Set style board.
@@ -44,11 +46,13 @@ function init() {
 
                 var content_instructions = CONTENT_INSTRUCTIONS;
                 content_instructions.dataset.currentPage = "1";
-                
-                var current_page = Number.parseInt(content_instructions.dataset.currentPage);
+
+                var current_page = Number.parseInt(
+                    content_instructions.dataset.currentPage
+                );
 
                 render_page_button(current_page);
-                
+
                 break;
             case "ranking":
                 controller = new AbortController(); //Abort one or more request.
@@ -71,8 +75,7 @@ function init() {
                     }
                 });
 
-                if (controller != null) 
-                {
+                if (controller != null) {
                     controller.abort(); //Abort the request ranking.
                     controller = null;
                 }
@@ -80,20 +83,24 @@ function init() {
                 break;
             case "go-back-page":
                 var content_instructions = CONTENT_INSTRUCTIONS;
-                var current_page = Number.parseInt(content_instructions.dataset.currentPage);
-                
+                var current_page = Number.parseInt(
+                    content_instructions.dataset.currentPage
+                );
+
                 current_page--;
 
-                if (current_page <= ARRAY_PAGES.length && current_page > 0) {    
+                if (current_page <= ARRAY_PAGES.length && current_page > 0) {
                     content_instructions.dataset.currentPage = current_page.toString();
 
                     render_page_button(current_page);
                 }
-                
+
                 break;
             case "go-next-page":
                 var content_instructions = CONTENT_INSTRUCTIONS;
-                var current_page = Number.parseInt(content_instructions.dataset.currentPage);
+                var current_page = Number.parseInt(
+                    content_instructions.dataset.currentPage
+                );
 
                 current_page++;
 
@@ -137,20 +144,28 @@ function render_page_button(num_page) {
         }
     });
 
-    let current_page_element = INSTRUCCIONS_MENU.querySelector(`div[data-page='${num_page}']`);
+    let current_page_element = INSTRUCCIONS_MENU.querySelector(
+        `div[data-page='${num_page}']`
+    );
 
-    let go_back_page_element = INSTRUCCIONS_MENU.querySelector("button[data-action='go-back-page']");
-    let go_next_page_element = INSTRUCCIONS_MENU.querySelector("button[data-action='go-next-page']");
+    let go_back_page_element = INSTRUCCIONS_MENU.querySelector(
+        "button[data-action='go-back-page']"
+    );
+    let go_next_page_element = INSTRUCCIONS_MENU.querySelector(
+        "button[data-action='go-next-page']"
+    );
 
     if (current_page_element.previousElementSibling !== null) {
-        let previous_page_name = current_page_element.previousElementSibling.dataset.pageName;
+        let previous_page_name =
+            current_page_element.previousElementSibling.dataset.pageName;
         go_back_page_element.innerText = previous_page_name;
     } else {
         go_back_page_element.innerText = "";
     }
-    
+
     if (current_page_element.nextElementSibling !== null) {
-        let next_page_name = current_page_element.nextElementSibling.dataset.pageName;
+        let next_page_name =
+            current_page_element.nextElementSibling.dataset.pageName;
         go_next_page_element.innerText = next_page_name;
     } else {
         go_next_page_element.innerText = "";
@@ -161,7 +176,7 @@ function render_page_button(num_page) {
 
     go_next_page_element.style.display = "block";
     go_next_page_element.style.display = "block";
-    
+
     if (num_page === 1) {
         go_back_page_element.style.display = "none";
     } else if (num_page === ARRAY_PAGES.length) {
@@ -195,15 +210,15 @@ function get_ranking(signal) {
         method: "POST",
         cache: "no-cache",
         body: data,
-        signal: signal
+        signal: signal,
     })
-    .then(response => response.json())
-    .then(data => {
-        TABLE_RANKING.style.height = "";
+        .then((response) => response.json())
+        .then((data) => {
+            TABLE_RANKING.style.height = "";
 
-        render_ranking(body, footer, data, 1);
-    })
-    .catch(error => console.error(error));
+            render_ranking(body, footer, data, 1);
+        })
+        .catch((error) => console.error(error));
 }
 
 function render_ranking(body, footer, data, id_user) {
@@ -214,7 +229,8 @@ function render_ranking(body, footer, data, id_user) {
 
         data.data.forEach((item, index) => {
             let position = index + 1;
-            let nickname = Number.parseInt(item.id) === id_user ? "Tu": item.nickname;
+            let nickname =
+                Number.parseInt(item.id) === id_user ? "Tu" : item.nickname;
             let points = item.points;
             let win = item.win;
 
@@ -261,13 +277,13 @@ function render_ranking(body, footer, data, id_user) {
 
             let cell_position = document.createElement("td");
             cell_position.innerText = "-";
-            
+
             let cell_nickname = document.createElement("td");
             cell_nickname.innerText = "Tu";
 
             let cell_points = document.createElement("td");
             cell_points.innerText = `${data.data_user.points}p`;
-            
+
             let cell_win = document.createElement("td");
             cell_win.innerText = data.data_user.win === 1 ? "Guanyat" : "Perdut";
 

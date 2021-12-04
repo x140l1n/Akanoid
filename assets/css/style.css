@@ -1,3 +1,17 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v8.3.6,
+* Autoprefixer: v10.3.1
+* Browsers: last 4 version
+*/
+
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v8.3.6,
+* Autoprefixer: v10.3.1
+* Browsers: last 4 version
+*/
+
 @font-face {
   font-family: "Press Start 2P";
   src: url("../fonts/PressStart2P-Regular.ttf");
@@ -11,7 +25,10 @@
       14 0,
     pointer;
   -webkit-font-smoothing: antialiased;
-  user-select: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
 }
 
 body {
@@ -40,7 +57,9 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: scale(1.1);
+  -webkit-transform: scale(1.1);
+      -ms-transform: scale(1.1);
+          transform: scale(1.1);
   margin-left: -400px;
   margin-top: -335px;
   -webkit-font-smoothing: antialiased;
@@ -61,7 +80,9 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
   color: white;
   padding-left: 20px;
   font-size: 150px;
@@ -69,6 +90,8 @@ body {
   height: 80px;
   z-index: 3;
   display: inline-block;
+  -webkit-transition: opacity 1s;
+  -o-transition: opacity 1s;
   transition: opacity 1s;
 }
 
@@ -113,11 +136,16 @@ body {
 }
 
 .board-menu .menu {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   width: 100%;
   height: 100%;
   padding: 50px;
-  flex-direction: column;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
 }
 
 .board-menu .menu:not(.main) {
@@ -125,6 +153,8 @@ body {
 }
 
 .board-menu .menu .menu-header {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
 }
 
@@ -168,13 +198,22 @@ body {
 }
 
 .board-menu .instructions-image {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  justify-content: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
 }
 
 .board-menu .instructions-image .image-text {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
   text-align: center;
   font-size: 10px;
 }
@@ -188,8 +227,12 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  display: -ms-grid;
   display: grid;
+  -ms-grid-columns: 1fr 20px 1fr;
   grid-template-columns: 1fr 1fr;
   grid-gap: 20px;
 }
@@ -197,8 +240,12 @@ body {
 .board-menu .controls .control {
   margin: 5px;
   font-size: 12px;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  align-items: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
   text-align: start;
 }
 
@@ -208,6 +255,8 @@ body {
 }
 
 .board-menu .menu.main .logo {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   margin: 50px auto;
   font-size: 60px;
@@ -223,24 +272,36 @@ body {
 }
 
 .board-menu .menu.main .logo .logo-1 {
+  -webkit-transition: left 1s ease-in-out;
+  -o-transition: left 1s ease-in-out;
   transition: left 1s ease-in-out;
   left: -600px;
 }
 
 .board-menu .menu.main .logo .logo-2 {
+  -webkit-transition: top 1s ease-in-out;
+  -o-transition: top 1s ease-in-out;
   transition: top 1s ease-in-out;
   top: -600px;
-  animation: spin 2s infinite linear;
+  -webkit-animation: spin 2s infinite linear;
+          animation: spin 2s infinite linear;
 }
 
 .board-menu .menu.main .logo .logo-3 {
+  -webkit-transition: right 1s ease-in-out;
+  -o-transition: right 1s ease-in-out;
   transition: right 1s ease-in-out;
   right: -600px;
 }
 
 .board-menu .menu.main .menu-options {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
   margin: auto;
 }
 
@@ -251,8 +312,12 @@ body {
 
 .board-menu .menu.main .menu-footer p {
   position: relative;
+  -webkit-transition: left 1s ease-in-out;
+  -o-transition: left 1s ease-in-out;
   transition: left 1s ease-in-out;
-  transition-delay: 2.5s;
+  -webkit-transition-delay: 2.5s;
+       -o-transition-delay: 2.5s;
+          transition-delay: 2.5s;
   left: -700px;
 }
 
@@ -265,23 +330,31 @@ body {
   background-position: 25px 5px;
   padding-left: 40px;
   background-size: 32px;
+  -webkit-transition: left 1s ease-in-out;
+  -o-transition: left 1s ease-in-out;
   transition: left 1s ease-in-out;
   left: -600px;
 }
 
 .board-menu .menu.main .menu-options button.play {
   background-image: url("../img/play.png");
-  transition-delay: 1s;
+  -webkit-transition-delay: 1s;
+       -o-transition-delay: 1s;
+          transition-delay: 1s;
 }
 
 .board-menu .menu.main .menu-options button.instructions {
   background-image: url("../img/question.png");
-  transition-delay: 1.5s;
+  -webkit-transition-delay: 1.5s;
+       -o-transition-delay: 1.5s;
+          transition-delay: 1.5s;
 }
 
 .board-menu .menu.main .menu-options button.ranking {
   background-image: url("../img/trophy.png");
-  transition-delay: 2s;
+  -webkit-transition-delay: 2s;
+       -o-transition-delay: 2s;
+          transition-delay: 2s;
 }
 
 .board-menu .menu .wrap-table-ranking {
@@ -320,7 +393,9 @@ body {
 
 .board-menu .menu .content-instructions {
   padding: 20px;
-  flex-grow: 1;
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
 }
 /***** End MENU *****/
 
@@ -365,27 +440,60 @@ body {
 /***** End STATS *****/
 
 /***** KEYFRAMES *****/
-@keyframes createSprite {
+@-webkit-keyframes createSprite {
   from {
-    transform: scale(0);
+    -webkit-transform: scale(0);
+            transform: scale(0);
   }
   to {
-    transform: scale(1);
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+@keyframes createSprite {
+  from {
+    -webkit-transform: scale(0);
+            transform: scale(0);
+  }
+  to {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+
+@-webkit-keyframes boardShadow {
+  50% {
+    -webkit-box-shadow: inset 0px 0px 20px 10px #ff0000;
+            box-shadow: inset 0px 0px 20px 10px #ff0000;
   }
 }
 
 @keyframes boardShadow {
   50% {
-    box-shadow: inset 0px 0px 20px 10px #ff0000;
+    -webkit-box-shadow: inset 0px 0px 20px 10px #ff0000;
+            box-shadow: inset 0px 0px 20px 10px #ff0000;
+  }
+}
+
+@-webkit-keyframes spin {
+  from {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
   }
 }
 
 @keyframes spin {
   from {
-    transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
   }
   to {
-    transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
   }
 }
 /***** End KEYFRAMES *****/
