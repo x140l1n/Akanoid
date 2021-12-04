@@ -43,6 +43,8 @@ function init() {
                 INSTRUCCIONS_MENU.style.display = "flex";
 
                 var content_instructions = CONTENT_INSTRUCTIONS;
+                content_instructions.dataset.currentPage = "1";
+                
                 var current_page = Number.parseInt(content_instructions.dataset.currentPage);
 
                 render_page_button(current_page);

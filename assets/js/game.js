@@ -3,11 +3,11 @@
 const ARRAY_BLOCKS_DESTROYABLE = [];
 const ARRAY_BLOCKS_REMAINING = [];
 const ARRAY_IMAGES_BLOCKS = {
-    0: "./assets/img/block_red.png",
-    1: "./assets/img/block_orange.png",
-    2: "./assets/img/block_purple.png",
-    3: "./assets/img/block_green.png",
-    4: "./assets/img/block_cyan.png",
+  0: "./assets/img/block_red.png",
+  1: "./assets/img/block_orange.png",
+  2: "./assets/img/block_purple.png",
+  3: "./assets/img/block_green.png",
+  4: "./assets/img/block_cyan.png",
 };
 
 const BLOCK_WIDTH = 50;
@@ -16,42 +16,42 @@ const COUNT_ROWS_BLOCKS = 5;
 const COUNT_COLS_BLOCKS = 14;
 
 const ARRAY_FRASE = {
-    0: { name: "FLEXIBILITAT", color: "red" },
-    1: { name: "RESPONSABILITAT", color: "orange" },
-    2: { name: "AUTONOMIA", color: "purple" },
-    3: { name: "SOCIABILITAT", color: "green" },
-    4: { name: "EVOLUCIO", color: "cyan" },
+  0: { name: "FLEXIBILITAT", color: "red" },
+  1: { name: "RESPONSABILITAT", color: "orange" },
+  2: { name: "AUTONOMIA", color: "purple" },
+  3: { name: "SOCIABILITAT", color: "green" },
+  4: { name: "EVOLUCIO", color: "cyan" },
 };
 
 const ARRAY_ITEMS = [];
 const ARRAY_TYPES_ITEMS = {
-    0: {
-        type: "add 15 seconds",
-        speed: 2,
-        image_url: "./assets/img/timer_plus_15.png",
-        function: () => {
-            if (timer) timer.add_seconds(15);
-            //Add +15s message to ship.
-            if (ship) {
-                ship.sprite.dataset.before = "+15 s";
+  0: {
+    type: "add 15 seconds",
+    speed: 2,
+    image_url: "./assets/img/timer_plus_15.png",
+    function: () => {
+      if (timer) timer.add_seconds(15);
+      //Add +15s message to ship.
+      if (ship) {
+        ship.sprite.dataset.before = "+15 s";
 
-                setTimeout(() => {
-                    //Remove the message from ship.
-                    ship.sprite.dataset.before = "";
-                }, 2000);
-            }
-        },
+        setTimeout(() => {
+          //Remove the message from ship.
+          ship.sprite.dataset.before = "";
+        }, 2000);
+      }
     },
-    1: {
-        type: "add 100 points",
-        speed: 2,
-        image_url: "./assets/img/100p.png",
-        function: () => {
-            if (ship) {
-                ship.add_points(100);
-            }
-        },
+  },
+  1: {
+    type: "add 100 points",
+    speed: 2,
+    image_url: "./assets/img/100p.png",
+    function: () => {
+      if (ship) {
+        ship.add_points(100);
+      }
     },
+  },
 };
 
 const TIME_UPDATE_ITEM = 1000 / 60; //In milliseconds (ms).
@@ -83,943 +83,931 @@ let content_frase = null;
 let timer = null;
 
 class Ball {
-    constructor(
-        ship,
-        width,
-        height,
-        x,
-        y,
-        image,
-        speed_default_x,
-        speed_default_y,
-        time_update
-    ) {
-        this.ship = ship;
-        this.width = width;
-        this.height = height;
-        this.x = x;
-        this.y = y;
-        this.default_position_x = x;
-        this.default_position_y = y;
-        this.image = image;
-        this.speed_default_x = speed_default_x;
-        this.speed_default_y = speed_default_y;
+  constructor(
+    ship,
+    width,
+    height,
+    x,
+    y,
+    image,
+    speed_default_x,
+    speed_default_y,
+    time_update
+  ) {
+    this.ship = ship;
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y;
+    this.default_position_x = x;
+    this.default_position_y = y;
+    this.image = image;
+    this.speed_default_x = speed_default_x;
+    this.speed_default_y = speed_default_y;
+    this.directionX = 1;
+    this.directionY = 1;
+    this.speedX = 0;
+    this.speedY = 0;
+    this.time_update = time_update;
+  }
+
+  create() {
+    if (!this.sprite) {
+      this.sprite = document.createElement("div");
+
+      Object.assign(this.sprite.style, {
+        position: "absolute",
+        borderRadius: "50%",
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        left: `${this.default_position_x}px`,
+        top: `${this.default_position_y}px`,
+        backgroundImage: `url(${this.image})`,
+        backgroundSize: "cover",
+        animation: "createSprite .80s",
+      });
+
+      BOARD_GAME_ELEMENT.appendChild(this.sprite);
+    } else {
+      Object.assign(this.sprite.style, {
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        left: `${this.default_position_x}px`,
+        top: `${this.default_position_y}px`,
+        animation: "",
+      });
+
+      this.draw();
+    }
+  }
+
+  draw() {
+    this.sprite.style.left = `${this.x}px`;
+    this.sprite.style.top = `${this.y}px`;
+  }
+
+  update() {
+    if (this.speedX !== 0 && this.speedY !== 0) {
+      //Check if the ball intersect with border right or border left of board.
+      if (this.x + this.width > BOARD_WIDTH - BORDER_WIDTH) {
+        this.directionX = -1;
+      } else if (this.x - BORDER_WIDTH < 0) {
         this.directionX = 1;
+      }
+
+      //Check if the ball touch border bottom or border top of board.
+      if (this.y + this.height > BOARD_HEIGHT - BORDER_WIDTH) {
+        //this.directionY = -1;
+        this.respawn();
+        this.ship.die();
+
+        return;
+      } else if (this.y - BORDER_WIDTH < 0) {
         this.directionY = 1;
-        this.speedX = 0;
-        this.speedY = 0;
-        this.time_update = time_update;
-    }
+      }
 
-    create() {
-        if (!this.sprite) {
-            this.sprite = document.createElement("div");
+      //Check if the ball is intersect with the ship.
+      if (intersect(this, this.ship)) {
+        //Only change direction when the direction Y is positive, in other words, when the ball goes down.
+        if (this.directionY === 1) {
+          //Check if the ball not exceded the ship height.
+          if (this.y + this.height < this.ship.y + this.ship.height / 2) {
+            //If the ball is touch the left side of the ship.
 
-            Object.assign(this.sprite.style, {
-                position: "absolute",
-                borderRadius: "50%",
-                width: `${this.width}px`,
-                height: `${this.height}px`,
-                left: `${this.default_position_x}px`,
-                top: `${this.default_position_y}px`,
-                backgroundImage: `url(${this.image})`,
-                backgroundSize: "cover",
-                animation: "createSprite .80s",
-            });
+            let isIntersectLeftRight = false;
 
-            BOARD_GAME_ELEMENT.appendChild(this.sprite);
-        } else {
-            Object.assign(this.sprite.style, {
-                width: `${this.width}px`,
-                height: `${this.height}px`,
-                left: `${this.default_position_x}px`,
-                top: `${this.default_position_y}px`,
-                animation: "",
-            });
+            let cloneShipLeft = { ...this.ship };
+            cloneShipLeft.width /= 5;
 
-            this.draw();
+            let cloneShipRight = { ...this.ship };
+            cloneShipRight.x += cloneShipRight.width - cloneShipRight.width / 5;
+
+            //If ball touch the left side of the ship.
+            if (intersect(this, cloneShipLeft)) {
+              isIntersectLeftRight = true;
+
+              this.directionX = -1;
+            } else if (intersect(this, cloneShipRight)) {
+              //If ball touch the right side of the ship.
+              isIntersectLeftRight = true;
+
+              this.directionX = 1;
+            } else {
+              //If the ball touch center of the ship.
+              this.speedX = SPEED_DEFAULT_X_BALL;
+              this.speedY = SPEED_DEFAULT_Y_BALL;
+            }
+
+            if (isIntersectLeftRight) {
+              cloneShipLeft.width /= 2;
+              cloneShipRight.x += cloneShipLeft.width;
+
+              if (
+                intersect(this, cloneShipLeft) ||
+                intersect(this, cloneShipRight)
+              ) {
+                this.speedX = this.speed_default_x + 5;
+                this.speedY = this.speed_default_y - 5;
+              } else {
+                this.speedX = this.speed_default_x;
+                this.speedY = this.speed_default_y;
+              }
+            }
+
+            cloneShipLeft = null;
+            cloneShipRight = null;
+
+            this.directionY = -1;
+          }
         }
-    }
+      }
 
-    draw() {
-        this.sprite.style.left = `${this.x}px`;
-        this.sprite.style.top = `${this.y}px`;
-    }
+      let indexBlocks = 0;
+      let blocksTouch = [];
+      let blockDestroy = null;
 
-    update() {
-        if (this.speedX !== 0 && this.speedY !== 0) {
-            //Check if the ball intersect with border right or border left of board.
-            if (this.x + this.width > BOARD_WIDTH - BORDER_WIDTH) {
-                this.directionX = -1;
-            } else if (this.x - BORDER_WIDTH < 0) {
-                this.directionX = 1;
-            }
-
-            //Check if the ball touch border bottom or border top of board.
-            if (this.y + this.height > BOARD_HEIGHT - BORDER_WIDTH) {
-                //this.directionY = -1;
-                this.respawn();
-                this.ship.die();
-
-                return;
-            } else if (this.y - BORDER_WIDTH < 0) {
-                this.directionY = 1;
-            }
-
-            //Check if the ball is intersect with the ship.
-            if (intersect(this, this.ship)) {
-                //Only change direction when the direction Y is positive, in other words, when the ball goes down.
-                if (this.directionY === 1) {
-                    //Check if the ball not exceded the ship height.
-                    if (this.y + this.height < this.ship.y + this.ship.height / 2) {
-                        //If the ball is touch the left side of the ship.
-
-                        let isIntersectLeftRight = false;
-
-                        let cloneShipLeft = { ...this.ship };
-                        cloneShipLeft.width /= 5;
-
-                        let cloneShipRight = { ...this.ship };
-                        cloneShipRight.x += cloneShipRight.width - cloneShipRight.width / 5;
-
-                        //If ball touch the left side of the ship.
-                        if (intersect(this, cloneShipLeft)) {
-                            isIntersectLeftRight = true;
-
-                            this.directionX = -1;
-                        } else if (intersect(this, cloneShipRight)) {
-                            //If ball touch the right side of the ship.
-                            isIntersectLeftRight = true;
-
-                            this.directionX = 1;
-                        } else {
-                            //If the ball touch center of the ship.
-                            this.speedX = SPEED_DEFAULT_X_BALL;
-                            this.speedY = SPEED_DEFAULT_Y_BALL;
-                        }
-
-                        if (isIntersectLeftRight) {
-                            cloneShipLeft.width /= 2;
-                            cloneShipRight.x += cloneShipLeft.width;
-
-                            if (
-                                intersect(this, cloneShipLeft) ||
-                                intersect(this, cloneShipRight)
-                            ) {
-                                this.speedX = this.speed_default_x + 5;
-                                this.speedY = this.speed_default_y - 5;
-                            } else {
-                                this.speedX = this.speed_default_x;
-                                this.speedY = this.speed_default_y;
-                            }
-                        }
-
-                        cloneShipLeft = null;
-                        cloneShipRight = null;
-
-                        this.directionY = -1;
-                    }
-                }
-            }
-
-            let indexBlocks = 0;
-            let blocksTouch = [];
-            let blockDestroy = null;
-
-            //Loop to check if the ball intersect with any blocks.
-            while (indexBlocks < ARRAY_BLOCKS_REMAINING.length) {
-                if (intersect(this, ARRAY_BLOCKS_REMAINING[indexBlocks])) {
-                    blocksTouch.push(ARRAY_BLOCKS_REMAINING[indexBlocks]);
-                }
-
-                indexBlocks++;
-            }
-
-            //If ball touch more than one block. Check which block will destroy.
-            if (blocksTouch.length > 1) {
-                let lessOffset = Number.MAX_VALUE;
-
-                for (let i = 0; i < blocksTouch.length; i++) {
-                    let block_rect = blocksTouch[i].sprite.getBoundingClientRect();
-                    let ball_rect = ball.sprite.getBoundingClientRect();
-
-                    let offsetBottom = Math.abs(block_rect.bottom - ball_rect.bottom);
-                    let offsetTop = Math.abs(block_rect.top - ball_rect.top);
-                    let offsetRight = Math.abs(block_rect.right - ball_rect.right);
-                    let offsetLeft = Math.abs(block_rect.left - ball_rect.left);
-
-                    let totalOffset = offsetBottom + offsetTop + offsetRight + offsetLeft;
-
-                    if (totalOffset < lessOffset) {
-                        blockDestroy = blocksTouch[i];
-                        lessOffset = totalOffset;
-                    }
-                }
-            } else if (blocksTouch.length == 1) {
-                blockDestroy = blocksTouch[0];
-            }
-
-            //If ball is intersect any block.
-            if (blockDestroy !== null) {
-                blockDestroy.destroy();
-                blockDestroy.check_border_intersect(this);
-                blockDestroy.generate_item(this.ship);
-
-                let block_destroy_index = ARRAY_BLOCKS_REMAINING.indexOf(blockDestroy);
-                ARRAY_BLOCKS_REMAINING.splice(block_destroy_index, 1);
-
-                this.ship.add_points(ACCUMULATE_POINTS_DEFAULT);
-            }
-
-            this.x += this.speedX * this.directionX;
-            this.y += this.speedY * this.directionY;
+      //Loop to check if the ball intersect with any blocks.
+      while (indexBlocks < ARRAY_BLOCKS_REMAINING.length) {
+        if (intersect(this, ARRAY_BLOCKS_REMAINING[indexBlocks])) {
+          blocksTouch.push(ARRAY_BLOCKS_REMAINING[indexBlocks]);
         }
 
-        this.draw();
+        indexBlocks++;
+      }
+
+      //If ball touch more than one block. Check which block will destroy.
+      if (blocksTouch.length > 1) {
+        let lessOffset = Number.MAX_VALUE;
+
+        for (let i = 0; i < blocksTouch.length; i++) {
+          let block_rect = blocksTouch[i].sprite.getBoundingClientRect();
+          let ball_rect = ball.sprite.getBoundingClientRect();
+
+          let offsetBottom = Math.abs(block_rect.bottom - ball_rect.bottom);
+          let offsetTop = Math.abs(block_rect.top - ball_rect.top);
+          let offsetRight = Math.abs(block_rect.right - ball_rect.right);
+          let offsetLeft = Math.abs(block_rect.left - ball_rect.left);
+
+          let totalOffset = offsetBottom + offsetTop + offsetRight + offsetLeft;
+
+          if (totalOffset < lessOffset) {
+            blockDestroy = blocksTouch[i];
+            lessOffset = totalOffset;
+          }
+        }
+      } else if (blocksTouch.length == 1) {
+        blockDestroy = blocksTouch[0];
+      }
+
+      //If ball is intersect any block.
+      if (blockDestroy !== null) {
+        blockDestroy.destroy();
+        blockDestroy.check_border_intersect(this);
+        blockDestroy.generate_item(this.ship);
+
+        let block_destroy_index = ARRAY_BLOCKS_REMAINING.indexOf(blockDestroy);
+        ARRAY_BLOCKS_REMAINING.splice(block_destroy_index, 1);
+
+        this.ship.add_points(ACCUMULATE_POINTS_DEFAULT);
+      }
+
+      this.x += this.speedX * this.directionX;
+      this.y += this.speedY * this.directionY;
     }
 
-    respawn() {
-        this.speedX = 0;
-        this.speedY = 0;
-        this.directionX = 1;
-        this.directionY = 1;
-        this.x = this.default_position_x;
-        this.y = this.default_position_y;
+    this.draw();
+  }
 
-        clearInterval(this.interval_ball);
-        this.interval_ball = null;
+  respawn() {
+    this.speedX = 0;
+    this.speedY = 0;
+    this.directionX = 1;
+    this.directionY = 1;
+    this.x = this.default_position_x;
+    this.y = this.default_position_y;
 
-        this.create();
-    }
+    clearInterval(this.interval_ball);
+    this.interval_ball = null;
+
+    this.create();
+  }
 }
 class Ship {
-    constructor(width, height, x, y, image, speed) {
-        this.width = width;
-        this.height = height;
-        this.x = x;
-        this.y = y;
-        this.default_position_x = x;
-        this.default_position_y = y;
-        this.image = image;
-        this.directionX = 1;
-        this.speed = speed;
-        this.isMove = false;
-        this.points = 0;
-        this.combo_points = 1;
-        this.count_blocks_destroy = 0;
+  constructor(width, height, x, y, image, speed) {
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y;
+    this.default_position_x = x;
+    this.default_position_y = y;
+    this.image = image;
+    this.directionX = 1;
+    this.speed = speed;
+    this.isMove = false;
+    this.points = 0;
+    this.combo_points = 1;
+    this.count_blocks_destroy = 0;
+  }
+
+  create() {
+    if (!this.sprite) {
+      this.sprite = document.createElement("div");
+      this.sprite.id = "ship";
+      this.sprite.dataset.before = "";
+
+      Object.assign(this.sprite.style, {
+        position: "absolute",
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        left: `${this.default_position_x}px`,
+        top: `${this.default_position_y}px`,
+        backgroundImage: `url(${this.image})`,
+        backgroundSize: `${this.width}px ${this.height}px`,
+        animation: "createSprite .80s",
+      });
+
+      //Add arrow direction shoot.
+      this.arrow_direction_shoot = document.createElement("i");
+      this.arrow_direction_shoot.classList.add(
+        "fas",
+        "fa-long-arrow-alt-right"
+      );
+      this.arrow_direction_shoot.style.visibility = "hidden";
+
+      this.sprite.appendChild(this.arrow_direction_shoot);
+
+      BOARD_GAME_ELEMENT.appendChild(this.sprite);
+    } else {
+      Object.assign(this.sprite.style, {
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        left: `${this.default_position_x}px`,
+        top: `${this.default_position_y}px`,
+        animation: "",
+      });
+
+      //Make visible the arrow direction shoot.
+      this.arrow_direction_shoot.style.visibility = "visible";
+
+      this.draw();
     }
 
-    create() {
-        if (!this.sprite) {
-            this.sprite = document.createElement("div");
-            this.sprite.id = "ship";
-            this.sprite.dataset.before = "";
+    //Set default direction arrow (right).
+    this.set_arrow_direction(1);
+  }
 
-            Object.assign(this.sprite.style, {
-                position: "absolute",
-                width: `${this.width}px`,
-                height: `${this.height}px`,
-                left: `${this.default_position_x}px`,
-                top: `${this.default_position_y}px`,
-                backgroundImage: `url(${this.image})`,
-                backgroundSize: `${this.width}px ${this.height}px`,
-                animation: "createSprite .80s",
-            });
+  draw() {
+    this.sprite.style.left = `${this.x}px`;
+    this.sprite.style.top = `${this.y}px`;
+  }
 
-            //Add arrow direction shoot.
-            this.arrow_direction_shoot = document.createElement("i");
-            this.arrow_direction_shoot.classList.add(
-                "fas",
-                "fa-long-arrow-alt-right"
-            );
-            this.arrow_direction_shoot.style.visibility = "hidden";
+  add_points(points) {
+    this.points += this.combo_points * points;
 
-            this.sprite.appendChild(this.arrow_direction_shoot);
+    POINTS_ELEMENT.innerText = `${this.points}p`;
+  }
 
-            BOARD_GAME_ELEMENT.appendChild(this.sprite);
-        } else {
-            Object.assign(this.sprite.style, {
-                width: `${this.width}px`,
-                height: `${this.height}px`,
-                left: `${this.default_position_x}px`,
-                top: `${this.default_position_y}px`,
-                animation: "",
-            });
+  substract_points(points) {
+    this.points -= points;
 
-            //Make visible the arrow direction shoot.
-            this.arrow_direction_shoot.style.visibility = "visible";
+    //Add message to ship.
+    this.sprite.dataset.before = `-${points}p`;
 
-            this.draw();
-        }
+    setTimeout(() => {
+      //Remove the message from ship.
+      this.sprite.dataset.before = "";
+    }, 2000);
 
-        //Set default direction arrow (right).
-        this.set_arrow_direction(1);
+    POINTS_ELEMENT.innerText = `${this.points}p`;
+  }
+
+  update() {
+    let newX = this.x + this.speed * this.directionX;
+
+    if (
+      newX + this.width <= BOARD_WIDTH - BORDER_WIDTH &&
+      newX - BORDER_WIDTH >= 0
+    ) {
+      this.x = newX;
+      this.isMove = true;
+      this.draw();
+    } else {
+      this.isMove = false;
     }
+  }
 
-    draw() {
-        this.sprite.style.left = `${this.x}px`;
-        this.sprite.style.top = `${this.y}px`;
+  set_arrow_direction(direction) {
+    //If is -1 is left.
+    //If is 1 is right.
+    if (direction === -1) {
+      Object.assign(this.arrow_direction_shoot.style, {
+        color: "white",
+        fontSize: "50px",
+        position: "absolute",
+        left: `${(this.width - (this.width - 32)) / 2}px`,
+        top: `-70px`,
+        transform: "rotate(-115deg)",
+      });
+
+      this.direction_shoot = -1;
+    } else {
+      Object.assign(this.arrow_direction_shoot.style, {
+        color: "white",
+        fontSize: "50px",
+        position: "absolute",
+        left: `${(this.width - 10) / 2}px`,
+        top: `-70px`,
+        transform: "rotate(-65deg)",
+      });
+
+      this.direction_shoot = 1;
     }
+  }
 
-    add_points(points) {
-        this.points += this.combo_points * points;
+  die() {
+    //Add blink effect on ship.
+    let interval_blink = setInterval(() => {
+      this.sprite.style.visibility =
+        this.sprite.style.visibility === "hidden" ? "" : "hidden";
+    }, 100);
 
-        POINTS_ELEMENT.innerText = `${this.points}p`;
-    }
+    setTimeout(() => {
+      clearInterval(interval_blink);
+      interval_blink = null;
+      this.sprite.style.visibility = "visible";
+    }, 1000);
 
-    substract_points(points) {
-        this.points -= points;
-        
-        //Add message to ship.
-        this.sprite.dataset.before = `-${points}p`;
+    this.x = this.default_position_x;
+    this.y = this.default_position_y;
 
-        setTimeout(() => {
-            //Remove the message from ship.
-            this.sprite.dataset.before = "";
-        }, 2000);
+    this.substract_points(200);
 
-        POINTS_ELEMENT.innerText = `${this.points}p`;
-    }
-
-    update() {
-        let newX = this.x + this.speed * this.directionX;
-
-        if (
-            newX + this.width <= BOARD_WIDTH - BORDER_WIDTH &&
-            newX - BORDER_WIDTH >= 0
-        ) {
-            this.x = newX;
-            this.isMove = true;
-            this.draw();
-        } else {
-            this.isMove = false;
-        }
-    }
-
-    set_arrow_direction(direction) {
-        //If is -1 is left.
-        //If is 1 is right.
-        if (direction === -1) {
-            Object.assign(this.arrow_direction_shoot.style, {
-                color: "white",
-                fontSize: "50px",
-                position: "absolute",
-                left: `${(this.width - (this.width - 32)) / 2}px`,
-                top: `-70px`,
-                transform: "rotate(-115deg)",
-            });
-
-            this.direction_shoot = -1;
-        } else {
-            Object.assign(this.arrow_direction_shoot.style, {
-                color: "white",
-                fontSize: "50px",
-                position: "absolute",
-                left: `${(this.width - 10) / 2}px`,
-                top: `-70px`,
-                transform: "rotate(-65deg)",
-            });
-
-            this.direction_shoot = 1;
-        }
-    }
-
-    die() {
-        //Add blink effect on ship.
-        let interval_blink = setInterval(() => {
-            this.sprite.style.visibility =
-                this.sprite.style.visibility === "hidden" ? "" : "hidden";
-        }, 100);
-
-        setTimeout(() => {
-            clearInterval(interval_blink);
-            interval_blink = null;
-            this.sprite.style.visibility = "visible";
-        }, 1000);
-
-        this.x = this.default_position_x;
-        this.y = this.default_position_y;
-
-        this.substract_points(200);
-
-        this.create();
-    }
+    this.create();
+  }
 }
 class Block {
-    constructor(
-        content_blocks,
-        width,
-        height,
-        x,
-        y,
-        image,
-        row,
-        col,
-        isDestroy,
-        isVisible
-    ) {
-        this.content_blocks = content_blocks;
-        this.width = width;
-        this.height = height;
-        this.x = x;
-        this.y = y;
-        this.image = image;
-        this.row = row;
-        this.col = col;
-        this.isDestroy = isDestroy;
-        this.isVisible = isVisible;
+  constructor(
+    content_blocks,
+    width,
+    height,
+    x,
+    y,
+    image,
+    row,
+    col,
+    isDestroy,
+    isVisible
+  ) {
+    this.content_blocks = content_blocks;
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y;
+    this.image = image;
+    this.row = row;
+    this.col = col;
+    this.isDestroy = isDestroy;
+    this.isVisible = isVisible;
+  }
+
+  create() {
+    if (!this.sprite) this.sprite = document.createElement("div");
+
+    Object.assign(this.sprite.style, {
+      backgroundImage: `url(${this.image})`,
+      backgroundSize: "100% 100%",
+      visibility: `${this.isVisible ? "visible" : "hidden"}`,
+      animation: "createSprite .80s",
+    });
+
+    this.content_blocks.appendChild(this.sprite);
+  }
+
+  destroy() {
+    Object.assign(this.sprite.style, {
+      transition: "transform .40s",
+      transform: "scale(0)",
+    });
+
+    this.isDestroy = true;
+  }
+
+  check_border_intersect(ball) {
+    let block_rect = this.sprite.getBoundingClientRect();
+    let ball_rect = ball.sprite.getBoundingClientRect();
+
+    let offsetBottom = Math.abs(block_rect.bottom - ball_rect.top);
+    let offsetTop = Math.abs(block_rect.top - ball_rect.bottom);
+    let offsetRight = Math.abs(block_rect.right - ball_rect.left);
+    let offsetLeft = Math.abs(block_rect.left - ball_rect.right);
+
+    if (offsetBottom < Math.min(offsetTop, offsetLeft, offsetRight)) {
+      if (ball.directionY == -1) {
+        ball.directionY = 1;
+      } else {
+        ball.directionX *= -1;
+      }
+    } else if (offsetTop < Math.min(offsetBottom, offsetLeft, offsetRight)) {
+      if (ball.directionY == 1) {
+        ball.directionY = -1;
+      } else {
+        ball.directionX *= -1;
+      }
+    } else if (offsetLeft < Math.min(offsetTop, offsetBottom, offsetRight)) {
+      if (ball.directionX == 1) {
+        ball.directionX = -1;
+      } else {
+        ball.directionY *= -1;
+      }
+    } else if (offsetRight < Math.min(offsetTop, offsetBottom, offsetLeft)) {
+      if (ball.directionX == -1) {
+        ball.directionX = 1;
+      } else {
+        ball.directionY *= -1;
+      }
     }
+  }
 
-    create() {
-        if (!this.sprite) this.sprite = document.createElement("div");
+  generate_item(ship) {
+    if (this.isDestroy) {
+      let type_item = null;
 
-        Object.assign(this.sprite.style, {
-            backgroundImage: `url(${this.image})`,
-            backgroundSize: "100% 100%",
-            visibility: `${this.isVisible ? "visible" : "hidden"}`,
-            animation: "createSprite .80s",
-        });
-
-        this.content_blocks.appendChild(this.sprite);
-    }
-
-    destroy() {
-        Object.assign(this.sprite.style, {
-            transition: "transform .40s",
-            transform: "scale(0)",
-        });
-
-        this.isDestroy = true;
-    }
-
-    check_border_intersect(ball) {
-        let block_rect = this.sprite.getBoundingClientRect();
-        let ball_rect = ball.sprite.getBoundingClientRect();
-
-        let offsetBottom = Math.abs(block_rect.bottom - ball_rect.top);
-        let offsetTop = Math.abs(block_rect.top - ball_rect.bottom);
-        let offsetRight = Math.abs(block_rect.right - ball_rect.left);
-        let offsetLeft = Math.abs(block_rect.left - ball_rect.right);
-
-        if (offsetBottom < Math.min(offsetTop, offsetLeft, offsetRight)) {
-            if (ball.directionY == -1) {
-                ball.directionY = 1;
-            } else {
-                ball.directionX *= -1;
-            }
-        } else if (offsetTop < Math.min(offsetBottom, offsetLeft, offsetRight)) {
-            if (ball.directionY == 1) {
-                ball.directionY = -1;
-            } else {
-                ball.directionX *= -1;
-            }
-        } else if (offsetLeft < Math.min(offsetTop, offsetBottom, offsetRight)) {
-            if (ball.directionX == 1) {
-                ball.directionX = -1;
-            } else {
-                ball.directionY *= -1;
-            }
-        } else if (offsetRight < Math.min(offsetTop, offsetBottom, offsetLeft)) {
-            if (ball.directionX == -1) {
-                ball.directionX = 1;
-            } else {
-                ball.directionY *= -1;
-            }
+      if (timer.seconds < 30 && timer.minutes === 0) {
+        if (!ARRAY_ITEMS.some((items) => items.type === ARRAY_TYPES_ITEMS[0])) {
+          type_item = ARRAY_TYPES_ITEMS[0];
+        } else {
+          if (
+            !ARRAY_ITEMS.some((items) => items.type === ARRAY_TYPES_ITEMS[1])
+          ) {
+            type_item = ARRAY_TYPES_ITEMS[1];
+          }
         }
-    }
-
-    generate_item(ship) {
-        if (this.isDestroy) {
-
-            let type_item = null;
-
-            if (timer.seconds < 30 && timer.minutes === 0) {
-                if (!ARRAY_ITEMS.some((items) => items.type === ARRAY_TYPES_ITEMS[0])) {
-                    type_item = ARRAY_TYPES_ITEMS[0];
-                } else {
-                    if (!ARRAY_ITEMS.some((items) => items.type === ARRAY_TYPES_ITEMS[1])) {
-                        type_item = ARRAY_TYPES_ITEMS[1];
-                    }
-                }
-            } else {
-                if (!ARRAY_ITEMS.some((items) => items.type === ARRAY_TYPES_ITEMS[1])) {
-                    type_item = ARRAY_TYPES_ITEMS[1];
-                }
-            }
-
-            if (type_item !== null) {
-                let item = new Item(
-                    this,
-                    ship,
-                    type_item,
-                    TIME_UPDATE_ITEM
-                );
-                item.create();
-    
-                ARRAY_ITEMS.push(item);
-            }
+      } else {
+        if (!ARRAY_ITEMS.some((items) => items.type === ARRAY_TYPES_ITEMS[1])) {
+          type_item = ARRAY_TYPES_ITEMS[1];
         }
+      }
+
+      if (type_item !== null) {
+        let item = new Item(this, ship, type_item, TIME_UPDATE_ITEM);
+        item.create();
+
+        ARRAY_ITEMS.push(item);
+      }
     }
+  }
 }
 class Timer {
-    constructor() {
-        this.minutes = TIMER_MINUTES_DEFAULT;
-        this.seconds = TIMER_SECONDS_DEFAULT;
+  constructor() {
+    this.minutes = TIMER_MINUTES_DEFAULT;
+    this.seconds = TIMER_SECONDS_DEFAULT;
+  }
+
+  start() {
+    this.interval_timer = setInterval(() => {
+      this.seconds--;
+
+      if (this.seconds < 0) {
+        this.seconds = 59;
+        this.minutes--;
+      }
+
+      //If time remaining is less than 00:30.
+      if (this.minutes === 0 && this.seconds <= 30) {
+        BOARD_GAME_ELEMENT.style.animation = "boardShadow 1s infinite";
+      } else {
+        BOARD_GAME_ELEMENT.style.animation = "";
+      }
+
+      if (this.minutes < 0) {
+        //Game over.
+        game_over();
+      } else {
+        TIMER_ELEMENT.innerText = `${
+          this.minutes < 10 ? `0${this.minutes}` : this.minutes
+        }:${this.seconds < 10 ? `0${this.seconds}` : this.seconds}`;
+      }
+    }, 1000);
+  }
+
+  stop() {
+    clearInterval(this.interval_timer);
+    this.interval_timer = null;
+  }
+
+  restart() {
+    this.minutes = TIMER_MINUTES_DEFAULT;
+    this.seconds = TIMER_SECONDS_DEFAULT;
+
+    this.start();
+  }
+
+  substract_seconds(seconds) {
+    let diff_seconds = timer.seconds - seconds;
+
+    if (diff_seconds < 0) {
+      timer.seconds = 59 - Math.abs(diff_seconds);
+
+      timer.minutes--;
+    } else {
+      timer.seconds = diff_seconds;
     }
 
-    start() {
-        this.interval_timer = setInterval(() => {
-            this.seconds--;
+    if (timer.minutes < 0) {
+      TIMER_ELEMENT.innerText = "00:00";
+    } else {
+      TIMER_ELEMENT.innerText = `${
+        timer.minutes < 10 ? `0${timer.minutes}` : timer.minutes
+      }:${timer.seconds < 10 ? `0${timer.seconds}` : timer.seconds}`;
+    }
+  }
 
-            if (this.seconds < 0) {
-                this.seconds = 59;
-                this.minutes--;
-            }
+  add_seconds(seconds) {
+    let diff_seconds = timer.seconds + seconds;
 
-            //If time remaining is less than 00:30.
-            if (this.minutes === 0 && this.seconds <= 30) {
-                BOARD_GAME_ELEMENT.style.animation = "boardShadow 1s infinite";
-            } else {
-                BOARD_GAME_ELEMENT.style.animation = "";
-            }
+    if (diff_seconds > 59) {
+      timer.seconds = diff_seconds - 59;
 
-            if (this.minutes < 0) {
-                //Game over.
-                game_over();
-            } else {
-                TIMER_ELEMENT.innerText = `${this.minutes < 10 ? `0${this.minutes}` : this.minutes
-                    }:${this.seconds < 10 ? `0${this.seconds}` : this.seconds}`;
-            }
-        }, 1000);
+      timer.minutes++;
+    } else {
+      timer.seconds = diff_seconds;
     }
 
-    stop() {
-        clearInterval(this.interval_timer);
-        this.interval_timer = null;
+    if (timer.minutes < 0) {
+      TIMER_ELEMENT.innerText = "00:00";
+    } else {
+      TIMER_ELEMENT.innerText = `${
+        timer.minutes < 10 ? `0${timer.minutes}` : timer.minutes
+      }:${timer.seconds < 10 ? `0${timer.seconds}` : timer.seconds}`;
     }
-
-    restart() {
-        this.minutes = TIMER_MINUTES_DEFAULT;
-        this.seconds = TIMER_SECONDS_DEFAULT;
-
-        this.start();
-    }
-
-    substract_seconds(seconds) {
-        let diff_seconds = timer.seconds - seconds;
-
-        if (diff_seconds < 0) {
-            timer.seconds = 59 - Math.abs(diff_seconds);
-
-            timer.minutes--;
-        } else {
-            timer.seconds = diff_seconds;
-        }
-
-        if (timer.minutes < 0) {
-            TIMER_ELEMENT.innerText = "00:00";
-        } else {
-            TIMER_ELEMENT.innerText = `${timer.minutes < 10 ? `0${timer.minutes}` : timer.minutes
-                }:${timer.seconds < 10 ? `0${timer.seconds}` : timer.seconds}`;
-        }
-    }
-
-    add_seconds(seconds) {
-        let diff_seconds = timer.seconds + seconds;
-
-        if (diff_seconds > 59) {
-            timer.seconds = diff_seconds - 59;
-
-            timer.minutes++;
-        } else {
-            timer.seconds = diff_seconds;
-        }
-
-        if (timer.minutes < 0) {
-            TIMER_ELEMENT.innerText = "00:00";
-        } else {
-            TIMER_ELEMENT.innerText = `${timer.minutes < 10 ? `0${timer.minutes}` : timer.minutes
-                }:${timer.seconds < 10 ? `0${timer.seconds}` : timer.seconds}`;
-        }
-    }
+  }
 }
 class Item {
-    constructor(block, ship, type, time_update) {
-        this.x = block.x;
-        this.y = block.y;
-        this.width = BLOCK_WIDTH;
-        this.height = BLOCK_HEIGHT;
-        this.ship = ship;
-        this.type = type;
-        this.time_update = time_update;
+  constructor(block, ship, type, time_update) {
+    this.x = block.x;
+    this.y = block.y;
+    this.width = BLOCK_WIDTH;
+    this.height = BLOCK_HEIGHT;
+    this.ship = ship;
+    this.type = type;
+    this.time_update = time_update;
+  }
+
+  create() {
+    this.sprite = document.createElement("div");
+
+    Object.assign(this.sprite.style, {
+      position: "absolute",
+      width: `${this.width}px`,
+      height: `${this.height}px`,
+      left: `${this.x}px`,
+      top: `${this.y}px`,
+      zIndex: 3,
+      backgroundImage: `url(${this.type.image_url})`,
+      backgroundSize: `${this.width}px ${this.height}px`,
+      backgroundRepeat: "no-repeat",
+    });
+
+    this.interval_item = setInterval(() => this.update(), this.time_update);
+
+    BOARD_GAME_ELEMENT.appendChild(this.sprite);
+  }
+
+  draw() {
+    this.sprite.style.left = `${this.x}px`;
+    this.sprite.style.top = `${this.y}px`;
+  }
+
+  update() {
+    //Check if the ball touch border bottom or border top of board.
+    if (this.y + this.height > BOARD_HEIGHT - BORDER_WIDTH) {
+      //Remove item.
+      this.remove();
     }
 
-    create() {
-        this.sprite = document.createElement("div");
+    //If item intersect with ship.
+    if (intersect(this, this.ship)) {
+      this.type.function();
 
-        Object.assign(this.sprite.style, {
-            position: "absolute",
-            width: `${this.width}px`,
-            height: `${this.height}px`,
-            left: `${this.x}px`,
-            top: `${this.y}px`,
-            zIndex: 3,
-            backgroundImage: `url(${this.type.image_url})`,
-            backgroundSize: `${this.width}px ${this.height}px`,
-            backgroundRepeat: "no-repeat",
-        });
-
-        this.interval_item = setInterval(() => this.update(), this.time_update);
-
-        BOARD_GAME_ELEMENT.appendChild(this.sprite);
+      this.remove();
     }
 
-    draw() {
-        this.sprite.style.left = `${this.x}px`;
-        this.sprite.style.top = `${this.y}px`;
+    this.y += this.type.speed;
+
+    this.draw();
+  }
+
+  remove() {
+    clearInterval(this.interval_item);
+    this.interval_item = null;
+
+    BOARD_GAME_ELEMENT.removeChild(this.sprite);
+
+    let index_remove = ARRAY_ITEMS.indexOf(this);
+
+    if (index_remove > -1) {
+      ARRAY_ITEMS.splice(index_remove, 1);
     }
-
-    update() {
-        //Check if the ball touch border bottom or border top of board.
-        if (this.y + this.height > BOARD_HEIGHT - BORDER_WIDTH) {
-            //Remove item.
-            this.remove();
-        }
-
-        //If item intersect with ship.
-        if (intersect(this, this.ship)) {
-            this.type.function();
-
-            this.remove();
-        }
-
-        this.y += this.type.speed;
-
-        this.draw();
-    }
-
-    remove() {
-        clearInterval(this.interval_item);
-        this.interval_item = null;
-
-        BOARD_GAME_ELEMENT.removeChild(this.sprite);
-
-        let index_remove = ARRAY_ITEMS.indexOf(this);
-
-        if (index_remove > -1) {
-            ARRAY_ITEMS.splice(index_remove, 1);
-        }
-    }
+  }
 }
 
 function init_game() {
-    STATS_ELEMENT.style.display = "block";
+  STATS_ELEMENT.style.display = "block";
 
-    if (!timer) timer = new Timer();
-    else timer.restart();
+  if (!timer) timer = new Timer();
+  else timer.restart();
 
-    TIMER_ELEMENT.innerText = "00:00";
+  TIMER_ELEMENT.innerText = "00:00";
 
-    //Create ship.
-    ship = new Ship(
-        SHIP_WIDTH,
-        SHIP_HEIGHT,
-        (BOARD_WIDTH - SHIP_WIDTH) / 2,
-        (BOARD_HEIGHT - SHIP_HEIGHT) / 1.15,
-        "./assets/img/ship.png",
-        SPEED_DEFAULT_SHIP
-    );
-    ship.create();
+  //Create ship.
+  ship = new Ship(
+    SHIP_WIDTH,
+    SHIP_HEIGHT,
+    (BOARD_WIDTH - SHIP_WIDTH) / 2,
+    (BOARD_HEIGHT - SHIP_HEIGHT) / 1.15,
+    "./assets/img/ship.png",
+    SPEED_DEFAULT_SHIP
+  );
+  ship.create();
 
-    //Create ball.
-    ball = new Ball(
-        ship,
-        BALL_WIDTH_HEIGHT,
-        BALL_WIDTH_HEIGHT,
-        (BOARD_WIDTH - BALL_WIDTH_HEIGHT) / 2,
-        ship.y - BALL_WIDTH_HEIGHT,
-        "./assets/img/ball.png",
-        SPEED_DEFAULT_X_BALL,
-        SPEED_DEFAULT_Y_BALL,
-        TIME_UPDATE_BALL
-    );
-    ball.create();
+  //Create ball.
+  ball = new Ball(
+    ship,
+    BALL_WIDTH_HEIGHT,
+    BALL_WIDTH_HEIGHT,
+    (BOARD_WIDTH - BALL_WIDTH_HEIGHT) / 2,
+    ship.y - BALL_WIDTH_HEIGHT,
+    "./assets/img/ball.png",
+    SPEED_DEFAULT_X_BALL,
+    SPEED_DEFAULT_Y_BALL,
+    TIME_UPDATE_BALL
+  );
+  ball.create();
 
-    //Create content blocks.
-    create_content_blocks(() => {
-        //When finish content blocks, then create content frase.
-        create_content_frase();
+  //Create content blocks.
+  create_content_blocks(() => {
+    //When finish content blocks, then create content frase.
+    create_content_frase();
 
-        create_count_down(() => {
-            if (!timer.interval_timer) {
-                timer.start();
+    create_count_down(() => {
+      if (!timer.interval_timer) {
+        timer.start();
+      }
+
+      //Make visible the arrow direction shoot.
+      ship.arrow_direction_shoot.style.visibility = "visible";
+
+      //Create controllers game.
+      //Code 39 => Move left
+      //Code 37 <= Move right
+      //Code 38 Set direction shoot left
+      //Code 40 Set direciton shoot right
+      //Code 32 Space bar
+      keyboard_controller(
+        {
+          37: function () {
+            if (ship != null && ball != null) {
+              ship.directionX = -1;
+              ship.update();
+
+              if (ball.speedX === 0 && ball.speedY === 0 && ship.isMove) {
+                ball.x -= SPEED_DEFAULT_SHIP;
+                ball.update();
+              }
             }
+          },
+          38: function () {
+            if (
+              ship != null &&
+              ball != null &&
+              ball.speedX === 0 &&
+              ball.speedY === 0
+            ) {
+              ship.set_arrow_direction(-1);
+            }
+          },
+          39: function () {
+            if (ship != null && ball != null) {
+              ship.directionX = 1;
+              ship.update();
 
-            //Make visible the arrow direction shoot.
-            ship.arrow_direction_shoot.style.visibility = "visible";
+              if (ball.speedX === 0 && ball.speedY === 0 && ship.isMove) {
+                ball.x += SPEED_DEFAULT_SHIP;
+                ball.update();
+              }
+            }
+          },
+          40: function () {
+            if (
+              ship != null &&
+              ball != null &&
+              ball.speedX === 0 &&
+              ball.speedY === 0
+            ) {
+              ship.set_arrow_direction(1);
+            }
+          },
+          32: function () {
+            if (ship != null && ball != null) {
+              if (ball.speedX === 0 && ball.speedY === 0) {
+                ship.arrow_direction_shoot.style.visibility = "hidden";
 
-            //Create controllers game.
-            //Code 39 => Move left
-            //Code 37 <= Move right
-            //Code 38 Set direction shoot left
-            //Code 40 Set direciton shoot right
-            //Code 32 Space bar
-            keyboard_controller(
-                {
-                    37: function () {
-                        if (ship != null && ball != null) {
-                            ship.directionX = -1;
-                            ship.update();
+                ball.directionX = ship.direction_shoot;
 
-                            if (ball.speedX === 0 && ball.speedY === 0 && ship.isMove) {
-                                ball.x -= SPEED_DEFAULT_SHIP;
-                                ball.update();
-                            }
-                        }
-                    },
-                    38: function () {
-                        if (
-                            ship != null &&
-                            ball != null &&
-                            ball.speedX === 0 &&
-                            ball.speedY === 0
-                        ) {
-                            ship.set_arrow_direction(-1);
-                        }
-                    },
-                    39: function () {
-                        if (ship != null && ball != null) {
-                            ship.directionX = 1;
-                            ship.update();
+                ball.speedX = SPEED_DEFAULT_X_BALL;
+                ball.speedY = SPEED_DEFAULT_Y_BALL;
 
-                            if (ball.speedX === 0 && ball.speedY === 0 && ship.isMove) {
-                                ball.x += SPEED_DEFAULT_SHIP;
-                                ball.update();
-                            }
-                        }
-                    },
-                    40: function () {
-                        if (
-                            ship != null &&
-                            ball != null &&
-                            ball.speedX === 0 &&
-                            ball.speedY === 0
-                        ) {
-                            ship.set_arrow_direction(1);
-                        }
-                    },
-                    32: function () {
-                        if (ship != null && ball != null) {
-                            if (ball.speedX === 0 && ball.speedY === 0) {
-                                ship.arrow_direction_shoot.style.visibility = "hidden";
-
-                                ball.directionX = ship.direction_shoot;
-
-                                ball.speedX = SPEED_DEFAULT_X_BALL;
-                                ball.speedY = SPEED_DEFAULT_Y_BALL;
-
-                                ball.interval_ball = setInterval(function () {
-                                    if (!is_finish_game()) {
-                                        ball.update();
-                                    }
-                                }, ball.time_update);
-                            }
-                        }
-                    },
-                },
-                TIME_REPEAT_CONTROLLER
-            );
-        });
+                ball.interval_ball = setInterval(function () {
+                  if (!is_finish_game()) {
+                    ball.update();
+                  }
+                }, ball.time_update);
+              }
+            }
+          },
+        },
+        TIME_REPEAT_CONTROLLER
+      );
     });
+  });
 }
 
 function create_count_down(callback) {
-    let contentCountDown = document.createElement("div");
-    contentCountDown.classList.add("countdown");
-    contentCountDown.innerText = "3";
+  let contentCountDown = document.createElement("div");
+  contentCountDown.classList.add("countdown");
+  contentCountDown.innerText = "3";
 
-    BOARD_GAME_ELEMENT.appendChild(contentCountDown);
+  BOARD_GAME_ELEMENT.appendChild(contentCountDown);
 
-    let countdown = setInterval(function () {
-        let text = Number.parseInt(contentCountDown.innerText) - 1;
+  let countdown = setInterval(function () {
+    let text = Number.parseInt(contentCountDown.innerText) - 1;
 
-        contentCountDown.innerText = "";
+    contentCountDown.innerText = "";
 
-        if (text !== 0 && !isNaN(text)) {
-            contentCountDown.innerText = text;
-        } else if (text === 0 && !isNaN(text)) {
-            text = "GO!";
-            contentCountDown.innerText = text;
-        } else {
-            clearInterval(countdown);
-            countdown = null;
-        }
-    }, 1000);
+    if (text !== 0 && !isNaN(text)) {
+      contentCountDown.innerText = text;
+    } else if (text === 0 && !isNaN(text)) {
+      text = "GO!";
+      contentCountDown.innerText = text;
+    } else {
+      clearInterval(countdown);
+      countdown = null;
+    }
+  }, 1000);
 
-    setTimeout(callback, 3500);
+  setTimeout(callback, 3500);
 }
 
 function create_content_blocks(callback) {
-    content_blocks = document.createElement("div");
+  content_blocks = document.createElement("div");
 
-    let width_content = BLOCK_WIDTH * COUNT_COLS_BLOCKS;
-    let height_content = BLOCK_HEIGHT * COUNT_ROWS_BLOCKS;
+  let width_content = BLOCK_WIDTH * COUNT_COLS_BLOCKS;
+  let height_content = BLOCK_HEIGHT * COUNT_ROWS_BLOCKS;
 
-    //Create content grid of blocks.
-    Object.assign(content_blocks.style, {
-        position: "absolute",
-        display: "grid",
-        width: `${width_content}px`,
-        height: `${height_content}px`,
-        top: `${BORDER_WIDTH * 5}px`,
-        zIndex: 2,
-        left: `${BOARD_WIDTH / 2 - width_content / 2}px`,
-        gridTemplateColumns: `repeat(${COUNT_COLS_BLOCKS}, ${BLOCK_WIDTH}px)`,
-        gridTemplateRows: `repeat(${COUNT_ROWS_BLOCKS}, ${BLOCK_HEIGHT}px)`,
-    });
+  //Create content grid of blocks.
+  Object.assign(content_blocks.style, {
+    position: "absolute",
+    display: "grid",
+    width: `${width_content}px`,
+    height: `${height_content}px`,
+    top: `${BORDER_WIDTH * 5}px`,
+    zIndex: 2,
+    left: `${BOARD_WIDTH / 2 - width_content / 2}px`,
+    gridTemplateColumns: `repeat(${COUNT_COLS_BLOCKS}, ${BLOCK_WIDTH}px)`,
+    gridTemplateRows: `repeat(${COUNT_ROWS_BLOCKS}, ${BLOCK_HEIGHT}px)`,
+  });
 
-    BOARD_GAME_ELEMENT.appendChild(content_blocks);
+  BOARD_GAME_ELEMENT.appendChild(content_blocks);
 
-    //Create blocks.
-    for (let row = 0; row < COUNT_ROWS_BLOCKS; row++) {
-        for (let col = 0; col < COUNT_COLS_BLOCKS; col++) {
-            let isDestroy = false;
-            let isVisible = true;
+  //Create blocks.
+  for (let row = 0; row < COUNT_ROWS_BLOCKS; row++) {
+    for (let col = 0; col < COUNT_COLS_BLOCKS; col++) {
+      let isDestroy = false;
+      let isVisible = true;
 
-            //Make this design of content blocks.
-            /*
+      //Make this design of content blocks.
+      /*
               -- --------- --
               -- --------- --
               -- --------- --
               -- --------- --
             */
-            if (col == 2 || col == COUNT_COLS_BLOCKS - 3) {
-                isDestroy = true;
-                isVisible = false;
-            } else {
-                isDestroy = false;
-                isVisible = true;
-            }
+      if (col == 2 || col == COUNT_COLS_BLOCKS - 3) {
+        isDestroy = true;
+        isVisible = false;
+      } else {
+        isDestroy = false;
+        isVisible = true;
+      }
 
-            let block = new Block(
-                content_blocks,
-                BLOCK_WIDTH,
-                BLOCK_HEIGHT,
-                content_blocks.offsetLeft + BLOCK_WIDTH * col,
-                content_blocks.offsetTop + BLOCK_HEIGHT * row,
-                ARRAY_IMAGES_BLOCKS[row],
-                row,
-                col,
-                isDestroy,
-                isVisible
-            );
+      let block = new Block(
+        content_blocks,
+        BLOCK_WIDTH,
+        BLOCK_HEIGHT,
+        content_blocks.offsetLeft + BLOCK_WIDTH * col,
+        content_blocks.offsetTop + BLOCK_HEIGHT * row,
+        ARRAY_IMAGES_BLOCKS[row],
+        row,
+        col,
+        isDestroy,
+        isVisible
+      );
 
-            block.create();
+      block.create();
 
-            if (isVisible && !isDestroy) {
-                ARRAY_BLOCKS_DESTROYABLE.push(block);
-                ARRAY_BLOCKS_REMAINING.push(block);
-            }
-        }
+      if (isVisible && !isDestroy) {
+        ARRAY_BLOCKS_DESTROYABLE.push(block);
+        ARRAY_BLOCKS_REMAINING.push(block);
+      }
     }
+  }
 
-    setTimeout(callback, 1500);
+  setTimeout(callback, 1500);
 }
 
 function create_content_frase() {
-    content_frase = document.createElement("div");
+  content_frase = document.createElement("div");
 
-    let width_content = BLOCK_WIDTH * COUNT_COLS_BLOCKS;
-    let height_content = BLOCK_HEIGHT * COUNT_ROWS_BLOCKS;
+  let width_content = BLOCK_WIDTH * COUNT_COLS_BLOCKS;
+  let height_content = BLOCK_HEIGHT * COUNT_ROWS_BLOCKS;
 
-    Object.assign(content_frase.style, {
-        position: "absolute",
-        display: "grid",
-        width: `${width_content}px`,
-        height: `${height_content}px`,
-        zIndex: 1,
-        top: `${BORDER_WIDTH * 5}px`,
-        left: `${BOARD_WIDTH / 2 - width_content / 2}px`,
-        gridTemplateColumns: "1fr",
-        gridTemplateRows: `repeat(${COUNT_ROWS_BLOCKS}, ${BLOCK_HEIGHT}px)`,
+  Object.assign(content_frase.style, {
+    position: "absolute",
+    display: "grid",
+    width: `${width_content}px`,
+    height: `${height_content}px`,
+    zIndex: 1,
+    top: `${BORDER_WIDTH * 5}px`,
+    left: `${BOARD_WIDTH / 2 - width_content / 2}px`,
+    gridTemplateColumns: "1fr",
+    gridTemplateRows: `repeat(${COUNT_ROWS_BLOCKS}, ${BLOCK_HEIGHT}px)`,
+  });
+
+  //Create frase.
+  for (let row = 0; row < COUNT_ROWS_BLOCKS; row++) {
+    let frase = ARRAY_FRASE[row];
+
+    let divFrase = document.createElement("div");
+
+    Object.assign(divFrase.style, {
+      color: frase["color"],
+      fontSize: "24px",
+      textAlign: "center",
+      paddingTop: "2px",
+      letterSpacing: "",
     });
 
-    //Create frase.
-    for (let row = 0; row < COUNT_ROWS_BLOCKS; row++) {
-        let frase = ARRAY_FRASE[row];
+    divFrase.innerText = frase["name"];
 
-        let divFrase = document.createElement("div");
+    content_frase.appendChild(divFrase);
+  }
 
-        Object.assign(divFrase.style, {
-            color: frase["color"],
-            fontSize: "24px",
-            textAlign: "center",
-            paddingTop: "2px",
-            letterSpacing: "",
-        });
-
-        divFrase.innerText = frase["name"];
-
-        content_frase.appendChild(divFrase);
-    }
-
-    BOARD_GAME_ELEMENT.appendChild(content_frase);
+  BOARD_GAME_ELEMENT.appendChild(content_frase);
 }
 
 //Keyboard input with customizable repeat (set to 0 for no key repeat).
 function keyboard_controller(keys, repeat) {
-    //Lookup of key codes to timer ID, or null for no repeat.
-    var timers = {};
+  //Lookup of key codes to timer ID, or null for no repeat.
+  var timers = {};
 
-    //When key is pressed and we don't already think it's pressed, call the
-    //key action callback and set a timer to generate another one after a delay.
-    document.onkeydown = function (event) {
-        var key = (event || window.event).keyCode;
+  //When key is pressed and we don't already think it's pressed, call the
+  //key action callback and set a timer to generate another one after a delay.
+  document.onkeydown = function (event) {
+    var key = (event || window.event).keyCode;
 
-        if (key !== null) {
-            if (!(key in keys)) {
-                return true;
-            }
-    
-            if (!(key in timers)) {
-                timers[key] = null;
-                keys[key]();
-    
-                if (repeat !== 0) {
-                    timers[key] = setInterval(keys[key], repeat);
-                }
-            }
+    if (typeof key !== "undefined") {
+      if (!(key in keys)) {
+        return true;
+      }
+
+      if (!(key in timers)) {
+        timers[key] = null;
+        keys[key]();
+
+        if (repeat !== 0) {
+          timers[key] = setInterval(keys[key], repeat);
+        }
+      }
+    }
+
+    return false;
+  };
+
+  //Cancel timeout and mark key as released on keyup.
+  document.onkeyup = function (event) {
+    var key = (event || window.event).keyCode;
+
+    if (typeof key !== "undefined") {
+      if (key in timers) {
+        if (timers[key] !== null) {
+          clearInterval(timers[key]);
+          timers[key] = null;
         }
 
-        return false;
-    };
-
-    //Cancel timeout and mark key as released on keyup.
-    document.onkeyup = function (event) {
-        var key = (event || window.event).keyCode;
-
-        if (key in timers) {
-            if (timers[key] !== null) {
-                clearInterval(timers[key]);
-                timers[key] = null;
-            }
-
-            delete timers[key];
-        }
-    };
-
-    //When window is unfocused we may not get key events. To prevent this
-    //causing a key to 'get stuck down', cancel all held keys.
-    window.onblur = function () {
-        for (key in timers) {
-            if (timers[key] !== null) {
-                clearInterval(timers[key]);
-                timers[key] = null;
-            }
-        }
-
-        timers = {};
-    };
+        delete timers[key];
+      }
+    }
+  };
 }
 
 /**
@@ -1029,84 +1017,84 @@ function keyboard_controller(keys, repeat) {
  * @returns Returns true if intersect, otherwise, false.
  */
 function intersect(element1, element2) {
-    let isIntersect = true;
+  let isIntersect = true;
 
-    if (
-        element1.x > element2.x + element2.width ||
-        element2.x > element1.x + element1.width
-    )
-        isIntersect = false;
-    if (
-        element1.y > element2.y + element2.height ||
-        element2.y > element1.y + element1.height
-    )
-        isIntersect = false;
+  if (
+    element1.x > element2.x + element2.width ||
+    element2.x > element1.x + element1.width
+  )
+    isIntersect = false;
+  if (
+    element1.y > element2.y + element2.height ||
+    element2.y > element1.y + element1.height
+  )
+    isIntersect = false;
 
-    return isIntersect;
+  return isIntersect;
 }
 
 //Check if the game is finish.
 function is_finish_game() {
-    let isFinish = false;
-    //If the length of array blocks destroyed is equal than array blocks.
-    if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0) {
-        //Finish game.
-        timer.stop();
+  let isFinish = false;
+  //If the length of array blocks destroyed is equal than array blocks.
+  if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0) {
+    //Finish game.
+    timer.stop();
 
-        clearInterval(timer.interval_timer);
-        timer.interval_timer = null;
+    clearInterval(timer.interval_timer);
+    timer.interval_timer = null;
 
-        clearInterval(ball.interval_ball);
-        ball.interval_ball = null;
+    clearInterval(ball.interval_ball);
+    ball.interval_ball = null;
 
-        BOARD_GAME_ELEMENT.style.animation = "";
-        BOARD_GAME_ELEMENT.removeChild(ship.sprite);
-        BOARD_GAME_ELEMENT.removeChild(ball.sprite);
-        BOARD_GAME_ELEMENT.removeChild(content_blocks);
+    BOARD_GAME_ELEMENT.style.animation = "";
+    BOARD_GAME_ELEMENT.removeChild(ship.sprite);
+    BOARD_GAME_ELEMENT.removeChild(ball.sprite);
+    BOARD_GAME_ELEMENT.removeChild(content_blocks);
 
-        //Send the score to backend.
-        send_score(ship.points);
+    //Send the score to backend.
+    send_score(ship.points);
 
-        ARRAY_BLOCKS_DESTROYABLE.splice(0, ARRAY_BLOCKS_DESTROYABLE.length);
-        ARRAY_BLOCKS_REMAINING.splice(0, ARRAY_BLOCKS_REMAINING.length);
-        ARRAY_ITEMS.slice(0).forEach(item => item.remove());
-        ARRAY_ITEMS.splice(0, ARRAY_ITEMS.length);
+    ARRAY_BLOCKS_DESTROYABLE.splice(0, ARRAY_BLOCKS_DESTROYABLE.length);
+    ARRAY_BLOCKS_REMAINING.splice(0, ARRAY_BLOCKS_REMAINING.length);
+    ARRAY_ITEMS.slice(0).forEach((item) => item.remove());
+    ARRAY_ITEMS.splice(0, ARRAY_ITEMS.length);
 
-        ship = null;
-        ball = null;
+    ship = null;
+    ball = null;
 
-        isFinish = true;
-    }
+    isFinish = true;
+  }
 
-    return isFinish;
+  return isFinish;
 }
 
 function game_over() {
-    if (timer.minutes < 0 && ARRAY_BLOCKS_REMAINING.length !== 0) {
-        timer.stop();
+  if (timer.minutes < 0 && ARRAY_BLOCKS_REMAINING.length !== 0) {
+    timer.stop();
 
-        TIMER_ELEMENT.innerText = "00:00";
+    TIMER_ELEMENT.innerText = "00:00";
 
-        clearInterval(timer.interval_timer);
-        timer.interval_timer = null;
+    clearInterval(timer.interval_timer);
+    timer.interval_timer = null;
 
-        clearInterval(ball.interval_ball);
-        ball.interval_ball = null;
+    clearInterval(ball.interval_ball);
+    ball.interval_ball = null;
 
-        BOARD_GAME_ELEMENT.style.animation = "";
-        BOARD_GAME_ELEMENT.removeChild(ship.sprite);
-        BOARD_GAME_ELEMENT.removeChild(ball.sprite);
-        BOARD_GAME_ELEMENT.removeChild(content_blocks);
-        BOARD_GAME_ELEMENT.removeChild(content_frase);
+    BOARD_GAME_ELEMENT.style.animation = "";
+    BOARD_GAME_ELEMENT.removeChild(ship.sprite);
+    BOARD_GAME_ELEMENT.removeChild(ball.sprite);
+    BOARD_GAME_ELEMENT.removeChild(content_blocks);
+    BOARD_GAME_ELEMENT.removeChild(content_frase);
 
-        ARRAY_BLOCKS_DESTROYABLE.splice(0, ARRAY_BLOCKS_DESTROYABLE.length);
-        ARRAY_BLOCKS_REMAINING.splice(0, ARRAY_BLOCKS_REMAINING.length);
-        ARRAY_ITEMS.slice(0).forEach(item => item.remove());
-        ARRAY_ITEMS.splice(0, ARRAY_ITEMS.length);
+    ARRAY_BLOCKS_DESTROYABLE.splice(0, ARRAY_BLOCKS_DESTROYABLE.length);
+    ARRAY_BLOCKS_REMAINING.splice(0, ARRAY_BLOCKS_REMAINING.length);
+    ARRAY_ITEMS.slice(0).forEach((item) => item.remove());
+    ARRAY_ITEMS.splice(0, ARRAY_ITEMS.length);
 
-        ship = null;
-        ball = null;
-    }
+    ship = null;
+    ball = null;
+  }
 }
 
 /**
@@ -1114,7 +1102,7 @@ function game_over() {
  * @param {Number} points The total points of player.
  */
 function send_score(points) {
-    //If the length of array blocks destroyed is equal than array blocks.
-    if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0) {
-    }
+  //If the length of array blocks destroyed is equal than array blocks.
+  if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0) {
+  }
 }

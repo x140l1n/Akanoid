@@ -40,6 +40,7 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
+  transform: scale(1.1);
   margin-left: -400px;
   margin-top: -335px;
   -webkit-font-smoothing: antialiased;
@@ -157,12 +158,53 @@ body {
 }
 
 .board-menu .instructions-footer .go-next.btn-page {
-  float: right; 
+  float: right;
 }
 
 .board-menu div[name="page"] {
   text-align: justify;
   text-justify: inter-word;
+  height: 100%;
+}
+
+.board-menu .instructions-image {
+  display: flex;
+  justify-content: center;
+}
+
+.board-menu .instructions-image .image-text {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  font-size: 10px;
+}
+
+.board-menu .instructions-image .image-text img {
+  margin: 10px 50px;
+  height: 60px;
+}
+
+.board-menu .controls {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 20px;
+}
+
+.board-menu .controls .control {
+  margin: 5px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  text-align: start;
+}
+
+.board-menu .controls .control img {
+  height: 60px;
+  margin-right: 10px;
 }
 
 .board-menu .menu.main .logo {
@@ -188,6 +230,7 @@ body {
 .board-menu .menu.main .logo .logo-2 {
   transition: top 1s ease-in-out;
   top: -600px;
+  animation: spin 2s infinite linear;
 }
 
 .board-menu .menu.main .logo .logo-3 {
@@ -304,7 +347,7 @@ body {
   margin-right: 10px;
 }
 
-.stats table .img-timer img{
+.stats table .img-timer img {
   width: 40px;
   margin: 10px;
   margin-bottom: 15px;
@@ -337,50 +380,12 @@ body {
   }
 }
 
-@keyframes slideElementFromLeft {
-  0% {
-    left: -600px;
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
-  80% {
-    left: 20px;
-  }
-  100% {
-    left: 0px;
-  }
-}
-
-@keyframes logo1 {
-  0% {
-    left: -600px;
-  }
-  100% {
-    left: 0px;
-  }
-}
-
-@keyframes logo2 {
-  0% {
-    top: -200px;
-  }
-  50% {
-    top: 0px;
-  }
-  75% {
-    top: -50px;
-  }
-  100% {
-    top: 0px;
-  }
-
-
-}
-
-@keyframes logo3 {
-  0% {
-    right: -600px;
-  }
-  100% {
-    right: 0px;
+  to {
+    transform: rotate(360deg);
   }
 }
 /***** End KEYFRAMES *****/
