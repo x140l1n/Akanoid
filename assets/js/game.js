@@ -16,11 +16,11 @@ const COUNT_ROWS_BLOCKS = 5;
 const COUNT_COLS_BLOCKS = 14;
 
 const ARRAY_FRASE = {
-    0: { name: "FLEXIBILITAT", color: "red" },
-    1: { name: "RESPONSABILITAT", color: "orange" },
-    2: { name: "AUTONOMIA", color: "purple" },
-    3: { name: "SOCIABILITAT", color: "green" },
-    4: { name: "EVOLUCIO", color: "cyan" },
+    0: { name: "FLEXIBILITAT", color: "red", description: "La <strong><u>flexibilitat</u></strong> és la capacitat que té un alumne en treballar amb una visió global del projecte, tant del producte/servei com de l'aprenentatge. Això permet fer adaptacions fàcilment." },
+    1: { name: "RESPONSABILITAT", color: "orange", description: "La <strong><u>responsabilitat</u></strong> és la capacitat en que un alumne coneix els objectius amb precisió i es treballa de manera continuada i intensiva." },
+    2: { name: "AUTONOMIA", color: "purple", description: "La <strong><u>autonomia</u></strong> és la capacitat en que un alumne pot prendre una decisió i també pot atendre els suggeriments d'una autoritat considerada igual, superior o interior en una escala jeràrquica." },
+    3: { name: "SOCIABILITAT", color: "green", description: "La <strong><u>sociabilitat</u></strong> és la capacitat en que un alumne es comunica intensivament tant en el temps i espai acadèmic com a fora d'ell." },
+    4: { name: "EVOLUCIO", color: "cyan", description: "La <strong><u>evolució</u></strong> és la capacitat en que un alumne treballa de manera constant, completant els fulls de ruta amb escrit crític. Hi ha preocupació entrenant el sentit de cada tasca i com connecta amb el global del projecte." },
 };
 
 const ARRAY_ITEMS = [];
@@ -71,8 +71,6 @@ const TIMER_MINUTES_DEFAULT = 1;
 const TIMER_SECONDS_DEFAULT = 0;
 const SUBSTRACT_SECONDS = 15;
 
-const BOARD_GAME_ELEMENT = document.querySelector("#board-game");
-const STATS_ELEMENT = document.querySelector("#stats");
 const POINTS_ELEMENT = STATS_ELEMENT.querySelector("#points");
 const TIMER_ELEMENT = STATS_ELEMENT.querySelector("#timer");
 
@@ -124,7 +122,7 @@ class Ball {
                 top: `${this.default_position_y}px`,
                 backgroundImage: `url(${this.image})`,
                 backgroundSize: "cover",
-                animation: "createSprite .80s",
+                animation: "create_sprite .80s",
             });
 
             BOARD_GAME_ELEMENT.appendChild(this.sprite);
@@ -269,6 +267,10 @@ class Ball {
                 ARRAY_BLOCKS_REMAINING.splice(block_destroy_index, 1);
 
                 this.ship.add_points(ACCUMULATE_POINTS_DEFAULT);
+
+                if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0) {
+                    win();
+                }
             }
 
             this.x += this.speedX * this.directionX;
@@ -323,7 +325,7 @@ class Ship {
                 top: `${this.default_position_y}px`,
                 backgroundImage: `url(${this.image})`,
                 backgroundSize: `${this.width}px ${this.height}px`,
-                animation: "createSprite .80s",
+                animation: "create_sprite .80s",
             });
 
             //Add arrow direction shoot.
@@ -477,7 +479,7 @@ class Block {
             backgroundImage: `url(${this.image})`,
             backgroundSize: "100% 100%",
             visibility: `${this.isVisible ? "visible" : "hidden"}`,
-            animation: "createSprite .80s",
+            animation: "create_sprite .80s",
         });
 
         this.content_blocks.appendChild(this.sprite);
@@ -574,13 +576,12 @@ class Timer {
 
             //If time remaining is less than 00:30.
             if (this.minutes === 0 && this.seconds <= 30) {
-                BOARD_GAME_ELEMENT.style.animation = "boardShadow 1s infinite";
+                BOARD_GAME_ELEMENT.style.animation = "board_shadow 1s infinite";
             } else {
                 BOARD_GAME_ELEMENT.style.animation = "";
             }
 
             if (this.minutes < 0) {
-                //Game over.
                 game_over();
             } else {
                 TIMER_ELEMENT.innerText = `${this.minutes < 10 ? `0${this.minutes}` : this.minutes
@@ -710,11 +711,11 @@ class Item {
 
 function init_game() {
     STATS_ELEMENT.style.display = "block";
-
-    if (!timer) timer = new Timer();
-    else timer.restart();
+    BOARD_GAME_ELEMENT.style.display = "block";
+    BOARD_GAME_FINISH_ELEMENT.style.display = "none";
 
     TIMER_ELEMENT.innerText = "00:00";
+    timer = new Timer();
 
     //Create ship.
     ship = new Ship(
@@ -747,6 +748,7 @@ function init_game() {
         create_content_frase();
 
         create_count_down(() => {
+
             if (!timer.interval_timer) {
                 timer.start();
             }
@@ -815,9 +817,7 @@ function init_game() {
                                 ball.speedY = SPEED_DEFAULT_Y_BALL;
 
                                 ball.interval_ball = setInterval(function () {
-                                    if (!is_finish_game()) {
-                                        ball.update();
-                                    }
+                                    ball.update();
                                 }, ball.time_update);
                             }
                         }
@@ -884,11 +884,11 @@ function create_content_blocks(callback) {
 
             //Make this design of content blocks.
             /*
-                    -- --------- --
-                    -- --------- --
-                    -- --------- --
-                    -- --------- --
-                  */
+                -- --------- --
+                -- --------- --
+                -- --------- --
+                -- --------- --
+            */
             if (col == 2 || col == COUNT_COLS_BLOCKS - 3) {
                 isDestroy = true;
                 isVisible = false;
@@ -944,19 +944,23 @@ function create_content_frase() {
     for (let row = 0; row < COUNT_ROWS_BLOCKS; row++) {
         let frase = ARRAY_FRASE[row];
 
-        let divFrase = document.createElement("div");
+        let div_frase = document.createElement("div");
+        let span_frase = document.createElement("span");
 
-        Object.assign(divFrase.style, {
+        Object.assign(div_frase.style, {
             color: frase["color"],
             fontSize: "24px",
             textAlign: "center",
             paddingTop: "2px",
-            letterSpacing: "",
         });
 
-        divFrase.innerText = frase["name"];
+        span_frase.dataset.description = frase["description"];
+        span_frase.innerText = frase["name"];
+        span_frase.style.position = "relative";
 
-        content_frase.appendChild(divFrase);
+        div_frase.appendChild(span_frase);
+
+        content_frase.appendChild(div_frase);
     }
 
     BOARD_GAME_ELEMENT.appendChild(content_frase);
@@ -1030,12 +1034,10 @@ function intersect(element1, element2) {
     return isIntersect;
 }
 
-//Check if the game is finish.
-function is_finish_game() {
-    let isFinish = false;
-    //If the length of array blocks destroyed is equal than array blocks.
-    if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0) {
-        //Finish game.
+function win() {
+    //If the length of array blocks ramaining is equal than 0.
+    //if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0) {
+    if (true) {
         timer.stop();
 
         clearInterval(timer.interval_timer);
@@ -1044,29 +1046,78 @@ function is_finish_game() {
         clearInterval(ball.interval_ball);
         ball.interval_ball = null;
 
+        STATS_ELEMENT.style.display = "none";
+
         BOARD_GAME_ELEMENT.style.animation = "";
         BOARD_GAME_ELEMENT.removeChild(ship.sprite);
         BOARD_GAME_ELEMENT.removeChild(ball.sprite);
         BOARD_GAME_ELEMENT.removeChild(content_blocks);
 
-        //Send the score to backend.
-        send_score(ship.points);
-
         ARRAY_BLOCKS_DESTROYABLE.splice(0, ARRAY_BLOCKS_DESTROYABLE.length);
+
         ARRAY_BLOCKS_REMAINING.splice(0, ARRAY_BLOCKS_REMAINING.length);
+
         ARRAY_ITEMS.slice(0).forEach((item) => item.remove());
         ARRAY_ITEMS.splice(0, ARRAY_ITEMS.length);
 
+        //Add event listener hover in span frase to show more information.
+        content_frase.querySelectorAll("span").forEach(element => {
+            element.addEventListener("mouseover", e => {
+                if (!element.firstElementChild) {
+                    let ballon_message = document.createElement("div");
+
+                    let message = document.createElement("p");
+                    message.innerHTML = e.target.dataset.description;
+
+                    ballon_message.appendChild(message);
+
+                    element.appendChild(ballon_message);
+
+                    ballon_message.style.position = "absolute";
+                    ballon_message.style.fontSize = "12px";
+                    ballon_message.style.width = "500px";
+                    ballon_message.style.border = "5px white dashed";
+                    ballon_message.style.display = "inline-block";
+                    ballon_message.style.backgroundColor = "black";
+                    ballon_message.style.padding = "20px";
+                    ballon_message.style.top = `-${ballon_message.getBoundingClientRect().height}px`;
+                }
+            });
+
+            element.addEventListener("mouseleave", e => {
+                if (element.firstElementChild) {
+                    element.removeChild(element.firstElementChild);
+                }
+            });
+        });
+
+        //Show game over menu over game .
+        BOARD_GAME_FINISH_ELEMENT.style.position = "absolute";
+        BOARD_GAME_FINISH_ELEMENT.style.top = "120px";
+        BOARD_GAME_FINISH_ELEMENT.style.left = "0px";
+        BOARD_GAME_FINISH_ELEMENT.style.padding = "50px";
+        
+        send_score(true, ship.points, (data, previous_score) => {
+            //Show game over menu.
+            BOARD_GAME_FINISH_ELEMENT.querySelector("#text-game-finish").innerHTML =
+                "<u><strong>Enhorabona has guanyat!</strong></u>" +
+                "<br/><br/>" +
+                "Com pots veure la FRASE són les sigles de Flexibilitat, Responsabilitat, Autonomia, Sociabilitat y Evolució." +
+                "<br/><br/>" +
+                "<small>(Pots veure més informació si passes el cursor per damunt de la paraula)<small>";
+            BOARD_GAME_FINISH_ELEMENT.querySelector("#points-game-finish").innerText = `${previous_score} punts ${data.is_new_record ? "Nou Rècord" : ""}`;
+            BOARD_GAME_FINISH_ELEMENT.querySelectorAll("#content-game-finish > div").forEach((element, index) => setTimeout(() => element.style.visibility = "visible", 1000 * index));
+            BOARD_GAME_FINISH_ELEMENT.style.display = "flex";
+        });
+
         ship = null;
         ball = null;
-
-        isFinish = true;
+        timer = null;
     }
-
-    return isFinish;
 }
 
 function game_over() {
+    //Game over if the minutes is less than minutes and the length of array blocks remaining is not equal than 0.
     if (timer.minutes < 0 && ARRAY_BLOCKS_REMAINING.length !== 0) {
         timer.stop();
 
@@ -1078,6 +1129,8 @@ function game_over() {
         clearInterval(ball.interval_ball);
         ball.interval_ball = null;
 
+        STATS_ELEMENT.style.display = "none";
+
         BOARD_GAME_ELEMENT.style.animation = "";
         BOARD_GAME_ELEMENT.removeChild(ship.sprite);
         BOARD_GAME_ELEMENT.removeChild(ball.sprite);
@@ -1085,21 +1138,54 @@ function game_over() {
         BOARD_GAME_ELEMENT.removeChild(content_frase);
 
         ARRAY_BLOCKS_DESTROYABLE.splice(0, ARRAY_BLOCKS_DESTROYABLE.length);
+
         ARRAY_BLOCKS_REMAINING.splice(0, ARRAY_BLOCKS_REMAINING.length);
+
         ARRAY_ITEMS.slice(0).forEach((item) => item.remove());
         ARRAY_ITEMS.splice(0, ARRAY_ITEMS.length);
 
+        BOARD_GAME_ELEMENT.innerHTML = "";
+        BOARD_GAME_ELEMENT.style.display = "none";
+
+        send_score(false, ship.points, (data, previous_score) => {
+            //Show game over menu.
+            BOARD_GAME_FINISH_ELEMENT.querySelector("#text-game-finish").innerHTML = "GAME OVER <br/><br/>S'ha acabat el temps...";
+            BOARD_GAME_FINISH_ELEMENT.querySelector("#points-game-finish").innerText = `${previous_score} punts`;
+            BOARD_GAME_FINISH_ELEMENT.querySelectorAll("#content-game-finish > div").forEach((element, index) => setTimeout(() => element.style.visibility = "visible", 1000 * index));
+            BOARD_GAME_FINISH_ELEMENT.style.display = "flex";
+        });
+
         ship = null;
         ball = null;
+        timer = null;
     }
 }
 
 /**
  * Send the score to backend.
+ * @param {Boolean} is_win If the player win the game.
  * @param {Number} points The total points of player.
+ * @param {callback} callback The callback when fetch is resolved.
  */
-function send_score(points) {
-    //If the length of array blocks destroyed is equal than array blocks.
-    if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0) {
+function send_score(is_win, points, callback) {
+    //If the player win the game or lose the game.
+    if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0 || (timer.minutes < 0 && ARRAY_BLOCKS_REMAINING.length !== 0)) {
+        let data = new FormData();
+        data.append("action", "insert");
+        data.append("id_game", 1);
+        data.append("id_user", 1);
+        data.append("is_win", is_win);
+        data.append("points", points);
+
+        fetch("./backend/ranking.php", {
+            method: "POST",
+            cache: "no-cache",
+            body: data,
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                callback(data, points);
+            })
+            .catch((error) => console.error(error));
     }
 }

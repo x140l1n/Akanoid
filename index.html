@@ -78,7 +78,9 @@
                             <div name="page" data-page="2" data-page-name='Objectiu'>
                                 <u><strong>Objectiu</strong></u>
                                 <p><br />El objectiu del joc es destruir tots els blocs en menys <u><strong>d'1
-                                            minut</strong></u> y obtenir el <u><strong>maxim de punts</strong></u>.</p>
+                                            minut</strong></u> y obtenir el <u><strong>maxim de punts</strong></u>. Si
+                                    et queda poc temps
+                                    se't posarà la vora del joc en vermell.</p>
                                 <p>Cada bloc que es destrueix es sumarà <u><strong>100 punts</strong></u>. Si la bola
                                     surt de la zona del joc perdràs <u><strong>200 punts</strong></u>.</p>
                                 <p>Durant el joc et trobaràs <u><strong>objectes</strong></u> que t'ajudara a sumar
@@ -147,6 +149,17 @@
                     </div>
                 </div>
                 <div id="board-game" class="board-game">
+                </div>
+                <div id="board-game-finish" class="board-game-finish">
+                    <div id="content-game-finish"    class="content-game-finish">
+                        <div id="text-game-finish"></div>
+                        <div>La teva puntuació és:</div>
+                        <div id="points-game-finish"></div>
+                        <div>
+                            <button class="nes-btn is-primary" data-action="play-again">Tornar a jugar</button>
+                            <button class="nes-btn is-secondary" data-action="back-menu">Tornar al menú</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
