@@ -36,8 +36,9 @@ const ARRAY_TYPES_ITEMS = {
                 ship.sprite.dataset.before = "+15 s";
 
                 setTimeout(() => {
+
                     //Remove the message from ship.
-                    ship.sprite.dataset.before = "";
+                    if (ship) ship.sprite.dataset.before = "";
                 }, 2000);
             }
         },

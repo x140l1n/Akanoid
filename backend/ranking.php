@@ -115,8 +115,10 @@ function insert()
                 $current_ranking_user = $statement->fetch(PDO::FETCH_ASSOC);
 
                 //If have new record.
-                if ($current_ranking_user && ($current_ranking_user["points"] < $points || ($current_ranking_user["win"] == "0" AND $is_win === "true"))) {
+                if ($current_ranking_user && ($current_ranking_user["points"] < $points || ($current_ranking_user["win"] == "0" AND $is_win == "true"))) {
                     $statement = $db->connect()->prepare("UPDATE user_game_cycle SET points = :points, hits = :hits WHERE id_user = :id_user AND id_game = :id_game");
+
+                    $is_win = $is_win == "true" ? "1" : "0";
 
                     $statement->bindParam(":points", $points);
                     $statement->bindParam(":hits", $is_win);
@@ -130,6 +132,8 @@ function insert()
             } else {
                 //If not exists score game.
                 $statement = $db->connect()->prepare("INSERT INTO user_game_cycle (id_user, id_game, points, hits) VALUES (:id_user, :id_game, :points, :hits)");
+
+                $is_win = $is_win == "true" ? "1" : "0";
 
                 $statement->bindParam(":id_user", $id_user);
                 $statement->bindParam(":id_game", $id_game);
