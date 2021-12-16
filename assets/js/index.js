@@ -258,7 +258,6 @@ function render_ranking(body, footer, data, id_user) {
             let nickname =
                 Number.parseInt(item.id) === id_user ? "Tu" : item.nickname;
             let points = item.points;
-            let win = item.win;
 
             let row = document.createElement("tr");
 
@@ -285,13 +284,9 @@ function render_ranking(body, footer, data, id_user) {
             let cell_points = document.createElement("td");
             cell_points.innerText = `${points}p`;
 
-            let cell_win = document.createElement("td");
-            cell_win.innerText = win === 1 ? "Guanyat" : "Perdut";
-
             row.appendChild(cell_position);
             row.appendChild(cell_nickname);
             row.appendChild(cell_points);
-            row.appendChild(cell_win);
 
             body.appendChild(row);
         });
@@ -310,13 +305,9 @@ function render_ranking(body, footer, data, id_user) {
             let cell_points = document.createElement("td");
             cell_points.innerText = `${data.data_user.points}p`;
 
-            let cell_win = document.createElement("td");
-            cell_win.innerText = data.data_user.win === 1 ? "Guanyat" : "Perdut";
-
             row.appendChild(cell_position);
             row.appendChild(cell_nickname);
             row.appendChild(cell_points);
-            row.appendChild(cell_win);
 
             footer.appendChild(row);
         }

@@ -70,7 +70,6 @@ const TIME_REPEAT_CONTROLLER = 1000 / 60; //In milliseconds (ms).
 
 const TIMER_MINUTES_DEFAULT = 1;
 const TIMER_SECONDS_DEFAULT = 0;
-const SUBSTRACT_SECONDS = 15;
 
 const POINTS_ELEMENT = STATS_ELEMENT.querySelector("#points");
 const TIMER_ELEMENT = STATS_ELEMENT.querySelector("#timer");
@@ -712,10 +711,11 @@ class Item {
 
 function init_game() {
     STATS_ELEMENT.style.display = "block";
+    POINTS_ELEMENT.innerText = "0p";
     BOARD_GAME_ELEMENT.style.display = "block";
     BOARD_GAME_FINISH_ELEMENT.style.display = "none";
-
     TIMER_ELEMENT.innerText = "00:00";
+
     timer = new Timer();
 
     //Create ship.
@@ -1098,7 +1098,10 @@ function win() {
         BOARD_GAME_FINISH_ELEMENT.style.left = "0px";
         BOARD_GAME_FINISH_ELEMENT.style.padding = "50px";
         
-        send_score(true, ship.points, (data, previous_score) => {
+        //Add 500 points extra.
+        ship.points += 500;
+
+        send_score(ship.points, (data, previous_score) => {
             //Show game over menu.
             BOARD_GAME_FINISH_ELEMENT.querySelector("#text-game-finish").innerHTML =
                 "<u><strong>Enhorabona has guanyat!</strong></u>" +
@@ -1148,9 +1151,15 @@ function game_over() {
         BOARD_GAME_ELEMENT.innerHTML = "";
         BOARD_GAME_ELEMENT.style.display = "none";
 
-        send_score(false, ship.points, (data, previous_score) => {
+        //Show game over menu over game .
+        BOARD_GAME_FINISH_ELEMENT.style.position = "";
+        BOARD_GAME_FINISH_ELEMENT.style.top = "x";
+        BOARD_GAME_FINISH_ELEMENT.style.left = "";
+        BOARD_GAME_FINISH_ELEMENT.style.padding = "";
+        
+        send_score(ship.points, (data, previous_score) => {
             //Show game over menu.
-            BOARD_GAME_FINISH_ELEMENT.querySelector("#text-game-finish").innerHTML = "GAME OVER <br/><br/>S'ha acabat el temps...";
+            BOARD_GAME_FINISH_ELEMENT.querySelector("#text-game-finish").innerHTML = "GAME OVER <br/><br/>Que pena s'ha acabat el temps, no has pogut descobrir el significat de la FRASE, torna-ho a intentar!";
             BOARD_GAME_FINISH_ELEMENT.querySelector("#points-game-finish").innerText = `${previous_score} punts`;
             BOARD_GAME_FINISH_ELEMENT.querySelectorAll("#content-game-finish > div").forEach((element, index) => setTimeout(() => element.style.visibility = "visible", 1000 * index));
             BOARD_GAME_FINISH_ELEMENT.style.display = "flex";
@@ -1164,11 +1173,10 @@ function game_over() {
 
 /**
  * Send the score to backend.
- * @param {Boolean} is_win If the player win the game.
  * @param {Number} points The total points of player.
  * @param {callback} callback The callback when fetch is resolved.
  */
-function send_score(is_win, points, callback) {
+function send_score(points, callback) {
     //If the player win the game or lose the game.
     if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0 || (timer.minutes < 0 && ARRAY_BLOCKS_REMAINING.length !== 0)) {
         let data = new FormData();

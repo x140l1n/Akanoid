@@ -37,7 +37,7 @@ function get()
         if ($id_game !== -1 && $id_user !== -1) {
             $db = new Database();
 
-            $statement = $db->connect()->prepare("SELECT u.id, u.nickname, ugc.points, IFNULL(ugc.hits, 0) as win
+            $statement = $db->connect()->prepare("SELECT u.id, u.nickname, ugc.points
                                                   FROM user_game_cycle ugc
                                                   INNER JOIN user u ON u.id = ugc.id_user
                                                   WHERE ugc.id_game = :id_game
@@ -57,12 +57,12 @@ function get()
                     $in_top = true;
                 }
 
-                array_push($ranking, array("id" => $row["id"], "nickname" => $row["nickname"], "points" => $row["points"], "win" => $row["win"]));
+                array_push($ranking, array("id" => $row["id"], "nickname" => $row["nickname"], "points" => $row["points"]));
             }
 
             //If the user is not in the top 10.
             if (!$in_top) {
-                $statement = $db->connect()->prepare("SELECT u.id, u.nickname, ugc.points, IFNULL(ugc.hits, 0) as win
+                $statement = $db->connect()->prepare("SELECT u.id, u.nickname, ugc.points
                                                       FROM user_game_cycle ugc
                                                       INNER JOIN user u ON u.id = ugc.id_user
                                                       WHERE ugc.id_game = :id_game AND ugc.id_user = :id_user
@@ -93,13 +93,12 @@ function insert()
     $id_game = isset($_POST["id_game"]) ? $_POST["id_game"] : -1;
     $id_user = isset($_POST["id_user"]) ? $_POST["id_user"] : -1;
     $points = isset($_POST["points"]) ? $_POST["points"] : -1;
-    $is_win = isset($_POST["is_win"]) ? $_POST["is_win"] : -1;
 
     try {
-        if ($id_game !== -1 && $id_user !== -1 && $points !== -1 && $is_win !== -1) {
+        if ($id_game !== -1 && $id_user !== -1 && $points !== -1) {
             $db = new Database();
 
-            $statement = $db->connect()->prepare("SELECT u.id, u.nickname, ugc.points, IFNULL(ugc.hits, 0) as win
+            $statement = $db->connect()->prepare("SELECT u.id, u.nickname, ugc.points
                                                   FROM user_game_cycle ugc
                                                   INNER JOIN user u ON u.id = ugc.id_user
                                                   WHERE ugc.id_user = :id_user AND ugc.id_game = :id_game
@@ -115,13 +114,10 @@ function insert()
                 $current_ranking_user = $statement->fetch(PDO::FETCH_ASSOC);
 
                 //If have new record.
-                if ($current_ranking_user && ($current_ranking_user["points"] < $points || ($current_ranking_user["win"] == "0" AND $is_win == "true"))) {
+                if ($current_ranking_user && ($current_ranking_user["points"] < $points)) {
                     $statement = $db->connect()->prepare("UPDATE user_game_cycle SET points = :points, hits = :hits WHERE id_user = :id_user AND id_game = :id_game");
 
-                    $is_win = $is_win == "true" ? "1" : "0";
-
                     $statement->bindParam(":points", $points);
-                    $statement->bindParam(":hits", $is_win);
                     $statement->bindParam(":id_user", $id_user);
                     $statement->bindParam(":id_game", $id_game);
     
@@ -133,12 +129,9 @@ function insert()
                 //If not exists score game.
                 $statement = $db->connect()->prepare("INSERT INTO user_game_cycle (id_user, id_game, points, hits) VALUES (:id_user, :id_game, :points, :hits)");
 
-                $is_win = $is_win == "true" ? "1" : "0";
-
                 $statement->bindParam(":id_user", $id_user);
                 $statement->bindParam(":id_game", $id_game);
                 $statement->bindParam(":points", $points);
-                $statement->bindParam(":hits", $is_win);
 
                 $statement->execute();
             }
