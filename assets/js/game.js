@@ -1109,7 +1109,7 @@ function win() {
                 "Com pots veure la FRASE són les sigles de Flexibilitat, Responsabilitat, Autonomia, Sociabilitat y Evolució." +
                 "<br/><br/>" +
                 "<small>(Pots veure més informació si passes el cursor per damunt de la paraula)<small>";
-            BOARD_GAME_FINISH_ELEMENT.querySelector("#points-game-finish").innerText = `${previous_score} punts ${data.is_new_record ? "Nou Rècord" : ""}`;
+            BOARD_GAME_FINISH_ELEMENT.querySelector("#points-game-finish").innerText = `${previous_score} punts`;
             BOARD_GAME_FINISH_ELEMENT.querySelectorAll("#content-game-finish > div").forEach((element, index) => setTimeout(() => element.style.visibility = "visible", 1000 * index));
             BOARD_GAME_FINISH_ELEMENT.style.display = "flex";
         });
@@ -1179,7 +1179,8 @@ function game_over() {
 function send_score(points, callback) {
     //If the player win the game or lose the game.
     if (Object.values(ARRAY_BLOCKS_REMAINING).length === 0 || (timer.minutes < 0 && ARRAY_BLOCKS_REMAINING.length !== 0)) {
-        let data = new FormData();
+        callback(null, points);
+        /*let data = new FormData();
         data.append("action", "insert");
         data.append("id_game", 1);
         data.append("id_user", 1);
@@ -1195,6 +1196,6 @@ function send_score(points, callback) {
             .then((data) => {
                 callback(data, points);
             })
-            .catch((error) => console.error(error));
+            .catch((error) => console.error(error));*/
     }
 }
