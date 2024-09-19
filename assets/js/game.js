@@ -868,7 +868,7 @@ function create_mobile_controllers() {
   const buttonsConfig = [
     { id: "left", text: "<", action: () => move(-1) },
     { id: "shoot_left", text: "↖", action: () => shoot(-1) },
-    { id: "shoot", text: "Shoot", action: shootBall },
+    { id: "shoot", text: "Llançar", action: shootBall },
     { id: "shoot_right", text: "↗", action: () => shoot(1) },
     { id: "right", text: ">", action: () => move(1) },
   ];
