@@ -753,7 +753,7 @@ function init_game() {
   ship = new Ship(
     SHIP_WIDTH,
     SHIP_HEIGHT,
-    (BOARD_WIDTH - SHIP_WIDTH) / 2,
+    ((BOARD_WIDTH - SHIP_WIDTH) / 2) - 21,
     (BOARD_HEIGHT - SHIP_HEIGHT) / 1.15,
     "./assets/img/ship.png",
     SPEED_DEFAULT_SHIP
@@ -765,7 +765,7 @@ function init_game() {
     ship,
     BALL_WIDTH_HEIGHT,
     BALL_WIDTH_HEIGHT,
-    (BOARD_WIDTH - BALL_WIDTH_HEIGHT) / 2,
+    ((BOARD_WIDTH - BALL_WIDTH_HEIGHT) / 2) - 21,
     ship.y - BALL_WIDTH_HEIGHT,
     "./assets/img/ball.png",
     SPEED_DEFAULT_X_BALL,

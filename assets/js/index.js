@@ -201,9 +201,13 @@ function render_page_button(num_page) {
 }
 
 function is_mobile_or_tablet() {
-  const user_agent = navigator.userAgent || navigator.vendor || window.opera;
-
-  if (/android/i.test(user_agent) || /iPad|iPhone|iPod/.test(user_agent) && !window.MSStream) {
+  if (
+    navigator.userAgent.match(/iPhone/i) ||
+    navigator.userAgent.match(/iPad/i) ||
+    navigator.userAgent.match(/Android/i) ||
+    navigator.userAgent.match(/BlackBerry/i) ||
+    navigator.userAgent.match(/Windows Phone/i)
+  ) {
     return true;
   }
 
