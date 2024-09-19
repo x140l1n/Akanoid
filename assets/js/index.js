@@ -26,8 +26,6 @@ const STATS_ELEMENT = document.querySelector("#stats");
 
 const CONTROLERS_SCREEN_ELEMENT = document.querySelector("#controllers-screen");
 
-const IS_MOBILE = is_mobile_or_tablet();
-
 function init_menu() {
   //Set style board.
   BOARD_ELEMENT.style.borderWidth = `${BORDER_WIDTH}px`;

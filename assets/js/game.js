@@ -743,7 +743,7 @@ function init_game() {
   BOARD_GAME_FINISH_ELEMENT.style.display = "none";
   TIMER_ELEMENT.innerText = "00:00";
 
-  if (IS_MOBILE) {
+  if (is_mobile_or_tablet()) {
     create_mobile_controllers();
   }
 
