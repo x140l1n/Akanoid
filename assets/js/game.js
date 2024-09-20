@@ -743,10 +743,6 @@ function init_game() {
   BOARD_GAME_FINISH_ELEMENT.style.display = "none";
   TIMER_ELEMENT.innerText = "00:00";
 
-  if (is_mobile_or_tablet()) {
-    create_mobile_controllers();
-  }
-
   timer = new Timer();
 
   //Create ship.
@@ -786,6 +782,10 @@ function init_game() {
 
       //Make visible the arrow direction shoot.
       ship.arrow_direction_shoot.style.visibility = "visible";
+
+      if (is_mobile_or_tablet()) {
+        create_mobile_controllers();
+      }
 
       //Create controllers game.
       //Code 39 => Move left
