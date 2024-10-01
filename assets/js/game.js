@@ -32,7 +32,7 @@ const ARRAY_FRASE = {
     name: "AUTONOMIA",
     color: "purple",
     description:
-      "La <strong><u>autonomia</u></strong> és la capacitat en que un alumne pot prendre una decisió i també pot atendre els suggeriments d'una autoritat considerada igual, superior o interior en una escala jeràrquica.",
+      "La <strong><u>autonomia</u></strong> és la capacitat en que un alumne pot prendre una decisió i també pot atendre els suggeriments d'una autoritat considerada superior, inferior o igual en una escala jeràrquica.",
   },
   3: {
     name: "SOCIABILITAT",
